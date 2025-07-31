@@ -1,0 +1,69 @@
+# === Build artifacts ===
+*.o
+*.out
+*.lo
+*.a
+*.so
+*.dSYM/
+*.exe
+*.log
+*.core
+*.obj
+*.pch
+
+# === Static & Dynamic Libraries ===
+*.a
+*.la
+*.lai
+*.lib
+*.so
+*.dylib
+*.dll
+
+# === Binaries ===
+ircserv
+sircc
+
+# === Dependency files ===
+*.d
+
+# === Executables ===
+*.exe
+*.out
+*.app
+
+
+# === Editor/IDE Files ===
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.code-workspace
+
+# === OS-specific files ===
+.DS_Store
+Thumbs.db
+
+# === Valgrind / Debug / Profiling ===
+vgcore.*
+*.core
+*.prof
+
+# === Backup files ===
+*.bak
+*.tmp
+
+# === Compilation Metadata ===
+.cache
+compile_flags.txt
+compile_commands.json
+.ccls
+# main.cpp
+
+# === CMake (if used later) ===
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+# Makefile
+build/
