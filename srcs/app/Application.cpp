@@ -5,7 +5,7 @@
 
 setUpServer() sets up the listening socket.
 
-Password and Context objects are dynamically allocated.
+Password and ConnectionManager objects are dynamically allocated.
 
 Note: Consider using smart pointers (like std::auto_ptr in C++98 or at least clear deallocation) to avoid memory leaks. */
 
@@ -14,7 +14,7 @@ Application::Application( int port, const std::string &password )
 {
 	setUpServer();
 	_auth = new Password( password );
-	_state = new Context( *this, *_auth );
+	_state = new ConnectionManager( *this, *_auth );
 }
 
 
@@ -169,7 +169,7 @@ void Application::acceptNewClient()
 	client_fds[_activeConnections + 1].events = POLLIN | POLLOUT;
 
 	// Creating new user for client
-	_state->create_unregistered_user( _clientSocket.fd );
+	_state->registerPendingUser( _clientSocket.fd );
 	_activeConnections++;
 }
 
@@ -180,7 +180,7 @@ void Application::removeClient( int fd )
 	{
 		cleanUpMessagesFromRemovedClient( fd );
 
-		_state->remove_user( fd ); // Closes the client socket
+		_state->disconnectUserBySocket( fd ); // Closes the client socket
 
 		std::vector<pollfd>& client_fds = *_pollDescriptors;
 		for ( int i = 1; i <= _activeConnections; i++ )
@@ -193,9 +193,9 @@ void Application::removeClient( int fd )
  		   	}
   		}
 	}
-	catch ( Context::CouldNotFindUserException & e )
+	catch ( ConnectionManager::UserNotFoundException & e )
 	{
-		log_event::warn( "Application: Context:", e.what() );
+		log_event::warn( "Application: ConnectionManager:", e.what() );
 	}
 }
 
@@ -222,42 +222,42 @@ void Application::cleanUpMessagesFromRemovedClient( int fd )
 
 void Application::handleIncomingIrcPayload( int fd )
 {
-	static std::string message_buffer;
+	static std::string messageBuf;
 
 	try
 	{
-		receiveCommands( fd, message_buffer );
+		receiveCommands( fd, messageBuf );
 	}
 	catch ( Application::ClientDisconnectedException & e )
 	{
-		message_buffer = "";
+		messageBuf = "";
 		removeClient( fd );
 	}
 }
 
-void Application::receiveCommands( int fd, std::string & message_buffer )
+void Application::receiveCommands( int fd, std::string & messageBuf )
 {
-	while ( ! messageHasTerminator( message_buffer ) && ! sig::stopServer )
+	while ( ! messageHasTerminator( messageBuf ) && ! sig::stopServer )
 	{
 		try
 		{
-			extractCommands( fd, message_buffer );
-			processClientInput( fd, message_buffer );
+			extractCommands( fd, messageBuf );
+			processClientInput( fd, messageBuf );
 		}
 		catch ( Application::NoAvailablePayloadException & e )
 		{
 			break ;
 		}
-		catch ( Context::CouldNotFindUserException & e )
+		catch ( ConnectionManager::UserNotFoundException & e )
 		{
-			log_event::warn( "Application: Context:", e.what() );
+			log_event::warn( "Application: ConnectionManager:", e.what() );
 		}
 	}
 }	
 
-bool Application::messageHasTerminator( std::string & message_buffer )
+bool Application::messageHasTerminator( std::string & messageBuf )
 {
-	size_t terminator = message_buffer.find( "\r\n", 0 );
+	size_t terminator = messageBuf.find( "\r\n", 0 );
 	if ( terminator == std::string::npos )
 	{
 		return ( false );
@@ -265,7 +265,7 @@ bool Application::messageHasTerminator( std::string & message_buffer )
 	return ( true );
 }
 
-void Application::extractCommands( int fd, std::string & message_buffer )
+void Application::extractCommands( int fd, std::string & messageBuf )
 {
 	char buf[4096];
 	memset( buf, 0, sizeof( buf ) );
@@ -289,12 +289,12 @@ void Application::extractCommands( int fd, std::string & message_buffer )
 		// log_event::warn( "Application: read returned 0, read:", buf );
 		throw ClientDisconnectedException();
 	}
-	message_buffer += std::string( buf );
+	messageBuf += std::string( buf );
 }
 
-void Application::processClientInput( int fd, std::string & message_buffer )
+void Application::processClientInput( int fd, std::string & messageBuf )
 {
-	size_t terminator = message_buffer.find( "\r\n", 0 );
+	size_t terminator = messageBuf.find( "\r\n", 0 );
 	if ( terminator == std::string::npos )
 	{
 		return ;
@@ -303,13 +303,13 @@ void Application::processClientInput( int fd, std::string & message_buffer )
 
 	while ( terminator != std::string::npos )
 	{
-		std::string first_command = message_buffer.substr( pos, terminator + 2 - pos );
+		std::string first_command = messageBuf.substr( pos, terminator + 2 - pos );
 		log_event::command( fd, first_command );
-		_state->handle_message( _state->get_user_by_socket( fd ), first_command );
+		_state->processClientCommand( _state->getUserBySocket( fd ), first_command );
 		pos = terminator + 2;
-		terminator = message_buffer.find( "\r\n", pos );
+		terminator = messageBuf.find( "\r\n", pos );
 	}
-	message_buffer = "";
+	messageBuf = "";
 }
 
 void Application::sendMessageToClient( int socket, const std::string& message )
