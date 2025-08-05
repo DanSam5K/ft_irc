@@ -2,8 +2,18 @@
 #define APPLICATION_H
 
 #include "Password.hpp"
-#include "ft_irc.hpp"
 #include "Context.hpp"
+#include "ft_irc.hpp"
+#include "Password.hpp"
+#include "log_event.hpp"
+#include "signal.hpp"
+#include <csignal>
+#include <exception>
+#include <stdexcept>
+#include <fcntl.h> // Include for fcntl function
+#include <errno.h>
+#include <sys/poll.h>
+#include <vector>
 
 // Represents basic socket information (file descriptor and address)
 struct SocketInfo {
@@ -68,83 +78,12 @@ class Application {
 		Application &operator=(const Application& other);
 
 	public:
-		Application(int port, std::string password);
+		Application(int port, const std::string &password);
 		~Application();
 
 		void launchServer();
-		void sendMessageToClient(int socket, const std::string& message);
+		void sendMessageToClient(int socket, const std::string &message);
 		void removeClient(int fd);
 };
 
 #endif
-
-
-
-// Version 1
-// #ifndef APPLICATION_H
-// #define APPLICATION_H
-
-// #include "Password.hpp"
-// #include "ft_irc.hpp"
-
-// #include "Context.hpp"
-
-// struct SocketInfo
-// {
-// 	int fd;
-// 	struct sockaddr_in address;
-// };
-
-// struct IncomingIRCMessage {
-//   int client_fd;
-//   std::string irc_payload;
-// };
-
-// class Application
-// {
-// 	private:
-// 		int	_port;
-// 		SocketInfo _serverSocket;
-// 		SocketInfo _clientSocket;
-
-// 		std::list<pthread_t> _clientThreads;
-// 		const static int MAX_CLIENTS = SOMAXCONN;
-
-// 		int _activeConnections;
-		
-// 		std::vector<pollfd> * _pollDescriptors;
-// 		std::vector<IncomingIRCMessage> _pendingMessages;
-
-// 		Password * _auth;
-// 		Context * _state;
-
-// 		void setUpServer();
-// 		void eventLoop();
-// 		void acceptNewClient();
-// 		void readFromClients();
-// 		void handleIncomingIrcPayload( int fd );
-// 		void receiveCommands( int fd, std::string & message_buffer );
-// 		bool messageHasTerminator( std::string & message_buffer );
-// 		void extractCommands( int fd, std::string & message_buffer );
-// 		void processClientInput( int fd, std::string & message_buffer );
-// 		void broadcastPendingMessages();
-// 		void cleanUpMessagesFromRemovedClient( int fd );
-
-// 		class SeverShutdownException : public std::exception {};
-// 		class NoAvailablePayloadException : public std::exception {};
-// 		class ClientDisconnectedException : public std::exception {};
-
-// 	public:
-// 		Application( int port, std::string password );
-// 		Application( const Application & src );
-// 		Application & operator=( const Application & other );
-// 		virtual ~Application();
-
-// 		// void checkClientTimeout(); // Separate class
-// 		void launchServer();
-// 		void sendMessageToClient(int socket, const std::string& message);
-// 		void removeClient( int fd );
-
-// };
-
-// #endif /* APPLICATION_H */
