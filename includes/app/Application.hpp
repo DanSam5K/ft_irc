@@ -2,7 +2,7 @@
 #define APPLICATION_H
 
 #include "Password.hpp"
-#include "Context.hpp"
+#include "ConnectionManager.hpp"
 #include "ft_irc.hpp"
 #include "Password.hpp"
 #include "log_event.hpp"
@@ -50,7 +50,7 @@ class Application {
 
 		// Authentication and server state management
 		Password* _auth;
-		Context* _state;
+		ConnectionManager* _state;
 
 		// Server setup & control
 		void setUpServer();
@@ -60,10 +60,10 @@ class Application {
 		// Client communication
 		void readFromClients();
 		void handleIncomingIrcPayload(int fd);
-		void receiveCommands(int fd, std::string& message_buffer);
-		bool messageHasTerminator(std::string& message_buffer);
-		void extractCommands(int fd, std::string& message_buffer);
-		void processClientInput(int fd, std::string& message_buffer);
+		void receiveCommands(int fd, std::string& messageBuf);
+		bool messageHasTerminator(std::string& messageBuf);
+		void extractCommands(int fd, std::string& messageBuf);
+		void processClientInput(int fd, std::string& messageBuf);
 
 		// Message distribution
 		void broadcastPendingMessages();
