@@ -15,11 +15,11 @@ private:
 
 public:
 	// Constructor that stores hashed version of connection password
-	PasswordManager(const std::string& connectionPassword);
+	PasswordManager(const std::string &connectionPassword);
 	virtual ~PasswordManager();
 
 	// Return SHA-256 hash of provided plain text
-	std::string generateHash(const std::string& plainText);
+	std::string generateHash(const std::string &plainText);
 
 	// Validate incoming connection password against stored one
 	void verifyConnectionPassword(const std::string &password);
@@ -50,15 +50,15 @@ public:
 // {
 // 	private:
 // 		std::string connection_password_hash;
-// 		std::string create_sha256_hash( std::string plain_text );
+// 		std::string create_sha256_hash(std::string plain_text);
 
 // 	public:
-// 		Password( std::string connection_password );
+// 		Password(std::string connection_password);
 // 		virtual ~Password();
 
-// 		std::string get_hash( std::string plain_text );
-// 		void validate_connection_password( std::string password );
-// 		void validate_password( std::string hash, std::string password );
+// 		std::string get_hash(std::string plain_text);
+// 		void validate_connection_password(std::string password);
+// 		void validate_password(std::string hash, std::string password);
 
 // 		class InvalidPasswordException : public std::exception
 // 		{

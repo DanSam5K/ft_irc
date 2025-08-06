@@ -4,8 +4,8 @@
 #include "ConnectionManager.hpp"
 #include "ft_irc.hpp"
 #include "PasswordManager.hpp"
-#include "log_event.hpp"
-#include "signal.hpp"
+#include "utils_logger.hpp"
+#include "utils_signal_manager.hpp"
 #include <csignal>
 #include <exception>
 #include <stdexcept>
@@ -51,7 +51,7 @@ class Application {
 		PasswordManager* _auth;
 		ConnectionManager* _state;
 
-		// Server setup & control
+		// Server setup &control
 		void setUpServer();
 		void eventLoop();
 		void acceptNewClient();
@@ -59,10 +59,10 @@ class Application {
 		// Client communication
 		void readFromClients();
 		void handleIncomingIrcPayload(int fd);
-		void receiveCommands(int fd, std::string& messageBuf);
-		bool messageHasTerminator(std::string& messageBuf);
-		void extractCommands(int fd, std::string& messageBuf);
-		void processClientInput(int fd, std::string& messageBuf);
+		void receiveCommands(int fd, std::string&messageBuf);
+		bool messageHasTerminator(std::string&messageBuf);
+		void extractCommands(int fd, std::string&messageBuf);
+		void processClientInput(int fd, std::string&messageBuf);
 
 		// Message distribution
 		void broadcastPendingMessages();
@@ -73,8 +73,8 @@ class Application {
 		class NoAvailablePayloadException : public std::exception {};
 		class ClientDisconnectedException : public std::exception {};
 
-		Application(const Application& src);
-		Application &operator=(const Application& other);
+		Application(const Application&src);
+		Application &operator=(const Application&other);
 
 	public:
 		Application(int port, const std::string &password);
