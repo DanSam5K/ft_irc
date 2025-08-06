@@ -5,7 +5,7 @@
 
 setUpServer() sets up the listening socket.
 
-Password and ConnectionManager objects are dynamically allocated.
+PasswordManager and ConnectionManager objects are dynamically allocated.
 
 Note: Consider using smart pointers (like std::auto_ptr in C++98 or at least clear deallocation) to avoid memory leaks. */
 
@@ -13,7 +13,7 @@ Application::Application( int port, const std::string &password )
 	: _port( port ), _activeConnections(0)
 {
 	setUpServer();
-	_auth = new Password( password );
+	_auth = new PasswordManager( password );
 	_state = new ConnectionManager( *this, *_auth );
 }
 

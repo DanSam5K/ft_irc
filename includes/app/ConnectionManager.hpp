@@ -1,7 +1,7 @@
 #ifndef CONNECTION_MANAGER_HPP
 #define CONNECTION_MANAGER_HPP
 
-#include "Password.hpp"
+#include "PasswordManager.hpp"
 #include "ft_irc.hpp"
 #include "Message.hpp"
 #include "MessageHandler.hpp"
@@ -25,9 +25,9 @@ class ConnectionManager
 		std::map<std::string, User *> _activeUsers;
 		std::map<std::string, Channel *> _channels;
 
-		Application & _appInstance;
-		Password & _passHandler;
-		MessageHandler * _messHandler;
+		Application &_appInstance;
+		PasswordManager &_passHandler;
+		MessageHandler *_messHandler;
 
 		// Disallow copying
 		ConnectionManager( const ConnectionManager &src );
@@ -38,7 +38,7 @@ class ConnectionManager
 		void setupChannel( std::string name );
 
 	public:
-		ConnectionManager( Application & _appInstance, Password & _passHandler );
+		ConnectionManager( Application & _appInstance, PasswordManager &_passHandler );
 		virtual ~ConnectionManager();
 
 		// User lifecycle

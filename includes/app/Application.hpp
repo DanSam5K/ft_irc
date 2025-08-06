@@ -1,10 +1,9 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include "Password.hpp"
 #include "ConnectionManager.hpp"
 #include "ft_irc.hpp"
-#include "Password.hpp"
+#include "PasswordManager.hpp"
 #include "log_event.hpp"
 #include "signal.hpp"
 #include <csignal>
@@ -49,7 +48,7 @@ class Application {
 		std::vector<IncomingIRCMessage> _pendingMessages;
 
 		// Authentication and server state management
-		Password* _auth;
+		PasswordManager* _auth;
 		ConnectionManager* _state;
 
 		// Server setup & control

@@ -3,12 +3,12 @@
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
-#include "Password.hpp"
+#include "PasswordManager.hpp"
 #include "ft_irc.hpp"
 #include "log_event.hpp"
 
 ConnectionManager::ConnectionManager( Application & _appInstance,
-                  Password & password ) : _appInstance( _appInstance ),
+                  PasswordManager & password ) : _appInstance( _appInstance ),
 	_passHandler( password ),
 	_messHandler( NULL )
 {
@@ -307,7 +307,7 @@ std::list<Channel *> ConnectionManager::getUserChannels( User & user )
 
 std::list<User *> ConnectionManager::getMutualChannelUsers( User &user )
 {
-	std::list<User *> users_in_same_channels;
+	std::list<User *> usersInMutualChannel;
 	std::list<Channel *> chans = getUserChannels( user );
 	std::list<Channel *>::iterator it = chans.begin();
 	for ( ; it != chans.end(); it++ )
@@ -316,13 +316,13 @@ std::list<User *> ConnectionManager::getMutualChannelUsers( User &user )
 		std::list<User *>::iterator uit = chan_users.begin();
 		for ( ; uit != chan_users.end(); uit++ )
 		{
-			if ( *uit != &user && is_in_list( users_in_same_channels, *uit ) == false )
+			if ( *uit != &user && is_in_list( usersInMutualChannel, *uit ) == false )
 			{
-				users_in_same_channels.push_back( *uit );
+				usersInMutualChannel.push_back( *uit );
 			}
 		}
 	}
-	return ( users_in_same_channels );
+	return ( usersInMutualChannel );
 }
 
 void ConnectionManager::printPendingUsers() const
@@ -363,7 +363,7 @@ void ConnectionManager::printChannels() const
 
 void ConnectionManager::verifyConnectionPassword( const std::string &password )
 {
-	_passHandler.validate_connection_password( password );
+	_passHandler.verifyConnectionPassword( password );
 }
 
 void ConnectionManager::sendDirectMessage( int socket_fd, const std::string &message )
