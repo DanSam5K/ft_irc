@@ -25,7 +25,7 @@ Suggestion: Set these pointers to NULL after deletion to avoid dangling pointers
 
 Application::~Application()
 {
-	log_action_utils::info("Shutting down application");
+	logActionUtils::info("Shutting down application");
 	close(_serverSocket.fd);
 	delete _pollDescriptors;
 	delete _auth;
@@ -44,20 +44,20 @@ Ensures valid port range.
 
 void Application::setUpServer()
 {
-	// log_action_utils::info("Application: Initializing server...");
-	log_action_utils::info("Starting Server Setup");
+	// logActionUtils::info("Application: Initializing server...");
+	logActionUtils::info("Starting Server Setup");
 
 	_serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket.fd == -1)
 	{
 		throw std::runtime_error("Failed to create socket!");
 	}
-	log_action_utils::info("Setting non-blocking mode for server socket");
+	logActionUtils::info("Setting non-blocking mode for server socket");
 	int currentFlags = fcntl(_serverSocket.fd, F_GETFL, 0);
 
 	fcntl(_serverSocket.fd, F_SETFL, currentFlags | O_NONBLOCK);
 
-	log_action_utils::info("Connecting to port", _port);
+	logActionUtils::info("Connecting to port", _port);
 	_serverSocket.address.sin_family = AF_INET;
 	// if (_port < 6660 || _port > 7000)
 	// {
@@ -66,19 +66,19 @@ void Application::setUpServer()
 	_serverSocket.address.sin_port = htons(_port);
 	_serverSocket.address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	log_action_utils::info("Binding Socket");
+	logActionUtils::info("Binding Socket");
 	if (bind(_serverSocket.fd, (struct sockaddr *)&_serverSocket.address, sizeof(_serverSocket.address)) == -1)
 	{
 		throw(std::runtime_error("Port Binding Failed"));
 	}
-	log_action_utils::info("Listening for connections");
+	logActionUtils::info("Listening for connections");
 	if (listen(_serverSocket.fd, SOMAXCONN) == -1)
 	{
 		throw std::runtime_error("Unable to listen on socket");
 	}
 	_pollDescriptors = new std::vector<pollfd>(MAX_CLIENTS + 1);
 	signal(SIGINT, SignalManager::signalHandler);
-	log_action_utils::info("Server setup complete");
+	logActionUtils::info("Server setup complete");
 }
 
 void Application::launchServer()
@@ -89,7 +89,7 @@ void Application::launchServer()
 
 	// _activeConnections = 0; // keep track of number of connected clients
 
-	log_action_utils::info("Entering main loop");
+	logActionUtils::info("Entering main loop");
 
 	while (!SignalManager::shouldShutdown)
 	{
@@ -102,11 +102,11 @@ void Application::launchServer()
 		}
 		catch (Application::ServerShutdownException &e)
 		{
-			log_action_utils::warn("Server stopping gracefully");
+			logActionUtils::warn("Server stopping gracefully");
 			break;
 	   }
 	}
-	log_action_utils::info("Exited main loop");
+	logActionUtils::info("Exited main loop");
 }
 
 void Application::readFromClients()
@@ -128,7 +128,7 @@ void Application::eventLoop()
 	int num_ready = poll(_pollDescriptors->data(), _activeConnections + 1, -1);
 	if (num_ready == -1 && SignalManager::shouldShutdown)
 	{
-		log_action_utils::warn("Signal Interrupted");
+		logActionUtils::warn("Signal Interrupted");
 		throw Application::ServerShutdownException();
 	}
 	else if (num_ready == -1)
@@ -147,14 +147,14 @@ void Application::acceptNewClient()
 	}
 	socklen_t clientSize = sizeof(_clientSocket.address);
 
-	// log_action_utils::info("Application: Accepting client call...");
+	// logActionUtils::info("Application: Accepting client call...");
 	_clientSocket.fd = accept(_serverSocket.fd, (struct sockaddr *)&_clientSocket.address, &clientSize);
 	if (_clientSocket.fd == -1)
 	{
-		log_action_utils::warn("Client connection attempt Failed");
+		logActionUtils::warn("Client connection attempt Failed");
 		return;
 	}
-	log_action_utils::info("New client connection with fd", _clientSocket.fd);
+	logActionUtils::info("New client connection with fd", _clientSocket.fd);
 
 	// Set the client socket to non-blocking
 	int flags = fcntl(_clientSocket.fd, F_GETFL, 0);
@@ -175,7 +175,7 @@ void Application::acceptNewClient()
 
 void Application::removeClient(int fd)
 {
-	log_action_utils::info("Disconnecting client", fd);
+	logActionUtils::info("Disconnecting client", fd);
 	try
 	{
 		cleanUpMessagesFromRemovedClient(fd);
@@ -195,7 +195,7 @@ void Application::removeClient(int fd)
 	}
 	catch (ConnectionManager::UserNotFoundException &e)
 	{
-		log_action_utils::warn("Application: ConnectionManager:", e.what());
+		logActionUtils::warn("Application: ConnectionManager:", e.what());
 	}
 }
 
@@ -250,7 +250,7 @@ void Application::receiveCommands(int fd, std::string &messageBuf)
 		}
 		catch (ConnectionManager::UserNotFoundException &e)
 		{
-			log_action_utils::warn("Application: ConnectionManager:", e.what());
+			logActionUtils::warn("Application: ConnectionManager:", e.what());
 		}
 	}
 }	
@@ -280,13 +280,13 @@ void Application::extractCommands(int fd, std::string &messageBuf)
 		}
 		else
 		{
-			log_action_utils::warn("Error occurs while receiving message from socket", fd);
+			logActionUtils::warn("Error occurs while receiving message from socket", fd);
 			throw ClientDisconnectedException();
 		}
 	}
 	if (bytes_recv == 0)
 	{
-		// log_action_utils::warn("Application: read returned 0, read:", buf);
+		// logActionUtils::warn("Application: read returned 0, read:", buf);
 		throw ClientDisconnectedException();
 	}
 	messageBuf += std::string(buf);
@@ -304,7 +304,7 @@ void Application::processClientInput(int fd, std::string &messageBuf)
 	while (terminator != std::string::npos)
 	{
 		std::string first_command = messageBuf.substr(pos, terminator + 2 - pos);
-		log_action_utils::command(fd, first_command);
+		logActionUtils::command(fd, first_command);
 		_state->processClientCommand(_state->getUserBySocket(fd), first_command);
 		pos = terminator + 2;
 		terminator = messageBuf.find("\r\n", pos);
@@ -341,7 +341,7 @@ void Application::broadcastPendingMessages()
 			ssize_t bytes_sent = send(message.client_fd, message.irc_payload.c_str(), message.irc_payload.length(), 0);
 			if (bytes_sent == -1)
 			{
-				log_action_utils::warn("CommandMessage to socket fail", message.client_fd);
+				logActionUtils::warn("CommandMessage to socket fail", message.client_fd);
 				removeClient(message.client_fd);
 			}
 		}

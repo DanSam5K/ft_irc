@@ -22,7 +22,7 @@ MessageHandler::~MessageHandler() {}
 
 void MessageHandler::processClientCommand(User &sender, const std::string &rawMessage)
 {
-	CommandMessage * message = NULL;
+	CommandMessage *message = NULL;
 
 	try
 	{
@@ -41,8 +41,8 @@ void MessageHandler::processClientCommand(User &sender, const std::string &rawMe
 	}
 	catch (std::exception &e)
 	{
-		log_action_utils::warn("CommandMessage Handler: CommandMessage creation error: ", e.what());
-		log_action_utils::warn("--> CommandMessage was", rawMessage);
+		logActionUtils::warn("CommandMessage Handler: CommandMessage creation error: ", e.what());
+		logActionUtils::warn("--> CommandMessage was", rawMessage);
 		if (message != NULL)
 		{
 			delete (message);
@@ -51,10 +51,10 @@ void MessageHandler::processClientCommand(User &sender, const std::string &rawMe
 	}
 }
 
-CommandMessage * MessageHandler::buildCommandMessage(User &sender,
+CommandMessage *MessageHandler::buildCommandMessage(User &sender,
         std::string rawMessage)
 {
-	CommandMessage * message = NULL;
+	CommandMessage *message = NULL;
 	try
 	{
 		message = new CommandMessage(sender, rawMessage);
@@ -147,9 +147,9 @@ void MessageHandler::configureMessageHandlers()
 void MessageHandler::adminCommandHandler(CommandMessage &message)
 {
 	User &sender = message.getMessageSender();
-	if (message.checkCommandArgument("target") && message.getCommandArgument("target") != SERVER_NAME)
+	if (message.checkCommandArgument("modeTarget") && message.getCommandArgument("modeTarget") != SERVER_NAME)
 	{
-		sender.userBroadcast(rpl::err_nosuchserver(sender, message.getCommandArgument("target")));
+		sender.userBroadcast(rpl::err_nosuchserver(sender, message.getCommandArgument("modeTarget")));
 		return ;
 	}
 	sender.userBroadcast(rpl::adminme(sender));
@@ -247,9 +247,9 @@ void MessageHandler::capRequestHandler(CommandMessage &message)
 void MessageHandler::infoCommandHandler(CommandMessage &message)
 {
 	User &sender = message.getMessageSender();
-	if (message.checkCommandArgument("target") && message.getCommandArgument("target") != SERVER_NAME)
+	if (message.checkCommandArgument("modeTarget") && message.getCommandArgument("modeTarget") != SERVER_NAME)
 	{
-		sender.userBroadcast(rpl::err_nosuchserver(sender, message.getCommandArgument("target")));
+		sender.userBroadcast(rpl::err_nosuchserver(sender, message.getCommandArgument("modeTarget")));
 		return ;
 	}
 	sender.userBroadcast(rpl::info(sender, 0));
@@ -264,7 +264,7 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 	std::list<std::string> chan_names = message.getCommandArgumentList("channel");
 	if (chan_names.empty())
 	{
-		throw std::runtime_error("CommandMessage Handler: JOIN: did not provide channels to join!");
+		throw std::runtime_error("JOIN command failed: No channel specified.");
 	}
 	if (chan_names.front() == "0")
 	{
@@ -331,12 +331,11 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 		}
 		catch (Channel::AlreadyInChannelException &e)
 		{
-			log_action_utils::warn("CommandMessage Handler: JOIN: User " + sender.get_nickname() +
-			                 " is already in channel " + *chans);
+			logActionUtils::warn("JOIN: User " + sender.get_nickname() + " is already a member of channel " + *chans);
 		}
 		catch (std::exception &e)
 		{
-			log_action_utils::warn("CommandMessage Handler: JOIN: ", e.what());
+			logActionUtils::warn("CommandMessage Handler: JOIN: ", e.what());
 			sender.userBroadcast(rpl::err_nosuchchannel(sender, *chans));
 		}
 	}
@@ -516,7 +515,7 @@ void MessageHandler::namesCommandHandler(CommandMessage &message)
 		}
 		catch(std::exception &e)
 		{
-			log_action_utils::warn("CommandMessage Handler: NAMES:", e.what());
+			logActionUtils::warn("NAMES command error: ", e.what());
 		}
 		if (show_default_chan == false && it == last)
 		{
@@ -623,12 +622,12 @@ void MessageHandler::passCommandHandler(CommandMessage &message)
 	}
 	catch (PasswordManager::InvalidPasswordException &e)
 	{
-		log_action_utils::warn("MessageHandler: PASS: ", e.what());
+		logActionUtils::warn("MessageHandler: PASS: ", e.what());
 		sender.userBroadcast(rpl::err_passwdmismatch(sender));
 	}
 	catch (std::exception &e)
 	{
-		log_action_utils::info("MessageHandler: PASS: ", e.what());
+		logActionUtils::info("MessageHandler: PASS: ", e.what());
 	}
 }
 
@@ -712,7 +711,6 @@ void MessageHandler::userCommandHandler(CommandMessage &message)
 		sender.set_hostname(message.getCommandArgument("unused"));
 		sender.set_realname(message.getCommandArgument("realname"));
 		greetNewUser(sender);
-		/* sender.set_mode(message.getCommandArgument("mode")); */
 	}
 	catch (User::InvalidUsernameException &e)
 	{
@@ -720,7 +718,7 @@ void MessageHandler::userCommandHandler(CommandMessage &message)
 	}
 	catch (std::exception &e)
 	{
-		log_action_utils::warn("MessageHandler: USER:", e.what());
+		logActionUtils::warn("MessageHandler: USER:", e.what());
 	}
 }
 
@@ -752,7 +750,7 @@ void MessageHandler::greetNewUser(User &user)
 	}
 	catch (std::exception &e)
 	{
-		log_action_utils::warn("CommandMessage Handler: Welcome: ", e.what());
+		logActionUtils::warn("CommandMessage Handler: Welcome: ", e.what());
 	}
 }
 
@@ -770,5 +768,6 @@ void MessageHandler::pingCommandHandler(CommandMessage &message)
 
 void MessageHandler::pongCommandHandler(CommandMessage &message)
 {
+	// Dummy To be implemented
 	(void) message;
 }

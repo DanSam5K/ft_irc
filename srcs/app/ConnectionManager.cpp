@@ -12,14 +12,14 @@ ConnectionManager::ConnectionManager(Application &_appInstance,
 	_passHandler(password),
 	_messHandler(NULL)
 {
-	log_action_utils::info("ConnectionManager: Creating context");
+	logActionUtils::info("ConnectionManager: Creating context");
 	_messHandler = new MessageHandler(*this);
 	setupChannel(FALLBACK_CHANNEL);
 }
 
 ConnectionManager::~ConnectionManager()
 {
-	log_action_utils::info("ConnectionManager: Terminating context");
+	logActionUtils::info("ConnectionManager: Terminating context");
 	delete (_messHandler);
 	delete_map(_pendingUsers);
 	delete_map(_activeUsers);
@@ -28,7 +28,7 @@ ConnectionManager::~ConnectionManager()
 
 void ConnectionManager::registerPendingUser(int socket)
 {
-	User * newUser = new User(*this, socket);
+	User *newUser = new User(*this, socket);
 	_pendingUsers.insert(nickNameUserPair (socket, newUser));
 }
 
@@ -65,7 +65,7 @@ void ConnectionManager::disconnectUserBySocket(int socket)
 
 void ConnectionManager::removeActiveUser(User &user)
 {
-	log_action_utils::info("ConnectionManager: Removing registered user");
+	logActionUtils::info("ConnectionManager: Removing registered user");
 	std::map<std::string, User *>::iterator it = _activeUsers.find(
 	            user.get_nickname());
 	if (it != _activeUsers.end())
@@ -78,7 +78,7 @@ void ConnectionManager::removeActiveUser(User &user)
 
 void ConnectionManager::removePendingUser(User &user)
 {
-	log_action_utils::info("ConnectionManager: Removing unregistered user");
+	logActionUtils::info("ConnectionManager: Removing unregistered user");
 	std::map<int, User *>::iterator it = _pendingUsers.find(
 	        user.get_socket());
 	if (it != _pendingUsers.end())
@@ -90,14 +90,14 @@ void ConnectionManager::removePendingUser(User &user)
 
 void ConnectionManager::setupChannel(std::string name)
 {
-	Channel * newChannel = new Channel(name, _passHandler);
+	Channel *newChannel = new Channel(name, _passHandler);
 	std::string channelName = string_to_lowercase(newChannel->getChannelName());
 	_channels.insert(channelNamePair(channelName, newChannel));
 }
 
 void ConnectionManager::setupChannelForUser(User &user, const std::string &chanName)
 {
-	Channel * newChannel = new Channel(chanName, user, _passHandler);
+	Channel *newChannel = new Channel(chanName, user, _passHandler);
 	std::string channelName = string_to_lowercase(newChannel->getChannelName());
 	_channels.insert(channelNamePair(channelName, newChannel));
 	newChannel->promoteOperatorByUser(user);
@@ -112,7 +112,7 @@ void ConnectionManager::joinUserToChannel(User &user, const std::string &chanNam
 	else
 	{
 		std::string channelName = string_to_lowercase(chanName);
-		log_action_utils::info("ConnectionManager: Adding user \"" + user.get_nickname() +
+		logActionUtils::info("ConnectionManager: Adding user \"" + user.get_nickname() +
 		                 "\" to channel " + channelName);
 		_channels[channelName]->addUserToChannel(user);
 		if (chanName != FALLBACK_CHANNEL
@@ -132,13 +132,13 @@ void ConnectionManager::removeUserFromChannel(User &user, const std::string &cha
 	else
 	{
 		std::string channelName = string_to_lowercase(chanName);
-		log_action_utils::info("ConnectionManager: Removing user \"" + user.get_nickname() +
+		logActionUtils::info("ConnectionManager: Removing user \"" + user.get_nickname() +
 		                 "\" from channel " + channelName);
 		_channels[channelName]->removeUserFromChannel(user);
 		_channels[channelName]->demoteOperatorByUser(user);
 		if (checkUserInAnyChannel(user) == false && channelName != FALLBACK_CHANNEL)
 		{
-			log_action_utils::info("ConnectionManager: Adding user \"" + user.get_nickname() +
+			logActionUtils::info("ConnectionManager: Adding user \"" + user.get_nickname() +
 			                 "\" to channel *, because user is no longer in any channel");
 			_channels[FALLBACK_CHANNEL]->addUserToChannel(user);
 		}

@@ -17,7 +17,7 @@ Channel::Channel(std::string channelName,
 		return ;
 	}
 	setChannelName(channelName);
-	log_action_utils::info("Initialized new channel", this->channelName);
+	logActionUtils::info("Initialized new channel", this->channelName);
 
 }
 
@@ -30,7 +30,7 @@ Channel::Channel(std::string channelName,
 	setChannelName(channelName);
 	setChannelCreator(creator.get_nickname());
 	addUserToChannel(creator);
-	log_action_utils::info("User \"" + this->creatorNickname + "\" checkCommandArgument initialized channel",
+	logActionUtils::info("User \"" + this->creatorNickname + "\" checkCommandArgument initialized channel",
 					 this->channelName);
 
 }
@@ -99,7 +99,7 @@ std::string const &Channel::getModeFlags() const
 
 void Channel::addUserToChannel(User &user)
 {
-	log_action_utils::info("Channel \"" + this->channelName + "\": Adding user \"" 
+	logActionUtils::info("Channel \"" + this->channelName + "\": Adding user \"" 
 						+ user.get_nickname() + "\" to the channel");
 	if (confirmInChannelByUser(user) == true)
 	{
@@ -114,7 +114,7 @@ void Channel::addUserToChannel(User &user)
 
 void Channel::removeUserFromChannel(User &user)
 {
-	log_action_utils::info("Channel \"" + this->channelName + "\": User \"" + 
+	logActionUtils::info("Channel \"" + this->channelName + "\": User \"" + 
 					 user.get_nickname() + "\" checkCommandArgument been removed");
 	usersRegistry.erase(user.get_nickname());
 	operatorList.erase(user.get_nickname());

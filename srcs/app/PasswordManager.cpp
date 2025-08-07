@@ -5,7 +5,7 @@
 PasswordManager::PasswordManager(const std::string &connectionPassword) {
 	if (connectionPassword.empty())
 	{
-		log_action_utils::info("PasswordManager: No password provided, using default password");
+		logActionUtils::info("PasswordManager: No password provided, using default password");
 		hashedConnectionPassword = DEFAULT_CONN_PASSWORD_HASH;
 		return ;
 	}
@@ -25,7 +25,7 @@ std::string PasswordManager::computeSHA256(const std::string &password)
 	{
 		ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
 	}
-	log_action_utils::info("PasswordManager: Created hash", ss.str());
+	logActionUtils::info("PasswordManager: Created hash", ss.str());
 	return (ss.str());
 }
 
@@ -45,10 +45,10 @@ void PasswordManager::verifyPassword(const std::string &hash, const std::string 
 
 	if (password_hash != hash)
 	{
-		log_action_utils::info("PasswordManager: Incorrect password...");
+		logActionUtils::info("PasswordManager: Incorrect password...");
 		throw InvalidPasswordException();
 	}
-	log_action_utils::info("PasswordManager: Passwords match!");
+	logActionUtils::info("PasswordManager: Passwords match!");
 }
 
 const char* PasswordManager::InvalidPasswordException::what() const throw()
