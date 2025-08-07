@@ -3,7 +3,7 @@
 
 #include "PasswordManager.hpp"
 #include "ft_irc.hpp"
-#include "Message.hpp"
+#include "CommandMessage.hpp"
 #include "MessageHandler.hpp"
 #include "reply.hpp"
 #include "Application.hpp"

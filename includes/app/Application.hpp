@@ -64,7 +64,7 @@ class Application {
 		void extractCommands(int fd, std::string&messageBuf);
 		void processClientInput(int fd, std::string&messageBuf);
 
-		// Message distribution
+		// CommandMessage distribution
 		void broadcastPendingMessages();
 		void cleanUpMessagesFromRemovedClient(int fd);
 

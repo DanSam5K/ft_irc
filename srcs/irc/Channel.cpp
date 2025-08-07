@@ -30,7 +30,7 @@ Channel::Channel(std::string channelName,
 	setChannelName(channelName);
 	setChannelCreator(creator.get_nickname());
 	addUserToChannel(creator);
-	log_action_utils::info("User \"" + this->creatorNickname + "\" has initialized channel",
+	log_action_utils::info("User \"" + this->creatorNickname + "\" checkCommandArgument initialized channel",
 					 this->channelName);
 
 }
@@ -115,7 +115,7 @@ void Channel::addUserToChannel(User &user)
 void Channel::removeUserFromChannel(User &user)
 {
 	log_action_utils::info("Channel \"" + this->channelName + "\": User \"" + 
-					 user.get_nickname() + "\" has been removed");
+					 user.get_nickname() + "\" checkCommandArgument been removed");
 	usersRegistry.erase(user.get_nickname());
 	operatorList.erase(user.get_nickname());
 }

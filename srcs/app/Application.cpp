@@ -341,7 +341,7 @@ void Application::broadcastPendingMessages()
 			ssize_t bytes_sent = send(message.client_fd, message.irc_payload.c_str(), message.irc_payload.length(), 0);
 			if (bytes_sent == -1)
 			{
-				log_action_utils::warn("Message to socket fail", message.client_fd);
+				log_action_utils::warn("CommandMessage to socket fail", message.client_fd);
 				removeClient(message.client_fd);
 			}
 		}
