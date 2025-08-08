@@ -3,7 +3,7 @@
 #include "ModeParser.hpp"
 #include "ConnectionManager.hpp"
 #include "Channel.hpp"
-#include "Parsing.hpp"
+#include "RequestParser.hpp"
 #include "PasswordManager.hpp"
 #include "utils_logger.hpp"
 #include "reply.hpp"
@@ -59,7 +59,7 @@ CommandMessage *MessageHandler::buildCommandMessage(User &sender,
 	{
 		message = new CommandMessage(sender, rawMessage);
 	}
-	catch (Parsing::UnknownCommandException &e)
+	catch (RequestParser::UnknownCommandException &e)
 	{
 		sender.userBroadcast(rpl::err_unknowncommand(sender, ""));
 		throw std::runtime_error(e.what());
@@ -77,17 +77,17 @@ void MessageHandler::checkMessageValidity(User &sender, CommandMessage &message)
 	{
 		message.processInput();
 	}
-	catch (Parsing::TooManyParamsException &e)
+	catch (RequestParser::TooManyParamsException &e)
 	{
 		sender.userBroadcast(rpl::err_toomanyparams(sender, message.getCommandMessage()));
 		throw std::runtime_error(e.what());
 	}
-	catch (Parsing::NeedMoreParamsException &e)
+	catch (RequestParser::NeedMoreParamsException &e)
 	{
 		sender.userBroadcast(rpl::err_needmoreparams(sender, message.getCommandMessage()));
 		throw std::runtime_error(e.what());
 	}
-	catch (Parsing::UnknownCommandException &e)
+	catch (RequestParser::UnknownCommandException &e)
 	{
 		sender.userBroadcast(rpl::err_unknowncommand(sender, message.getCommandMessage()));
 		throw std::runtime_error(e.what());

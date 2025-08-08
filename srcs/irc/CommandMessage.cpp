@@ -1,6 +1,6 @@
 #include "CommandMessage.hpp"
 #include <stdexcept>
-#include "Parsing.hpp"
+#include "RequestParser.hpp"
 
 CommandMessage::CommandMessage(User &userRef, std::string &rawInput) : _originUser(userRef),
 	parser(NULL)
@@ -20,7 +20,7 @@ CommandMessage::CommandMessage(User &userRef, std::string &rawInput) : _originUs
 	}
 	rawInput.resize(rawInput.size() - 2);
 
-	parser = new Parsing(rawInput);
+	parser = new RequestParser(rawInput);
 }
 
 void CommandMessage::processInput()
@@ -38,7 +38,7 @@ std::string CommandMessage::getCommandMessage()
 	return (parser->getCommandMessage());
 }
 
-Parsing CommandMessage::get_parser()
+RequestParser CommandMessage::get_parser()
 {
 	return (*parser);
 }

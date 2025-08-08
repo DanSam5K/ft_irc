@@ -4,7 +4,7 @@
 #include "ft_irc.hpp"
 
 // Default SHA-256 hash for the connection password "password"
-#define DEFAULT_CONN_PASSWORD_HASH "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+#define DEFAULT_CONN_PASSWORD_HPPASH "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
 
 class PasswordManager {
 private:
@@ -38,8 +38,8 @@ public:
 
 
 
-// #ifndef PASSWORD_H
-// #define PASSWORD_H
+// #ifndef PASSWORD_HPP
+// #define PASSWORD_HPP
 
 // #include "ft_irc.hpp"
 

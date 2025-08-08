@@ -51,7 +51,7 @@ class ModeHandler
 		bool parseModeString();
 		void extractArguments();
 		bool containsInvalidModeString(std::string modes);
-		bool containsInvalidModeChar(char mode);
+		bool containsInvalidModeChar(char modeChar);
 		void executeModeChanges();
 
 		// Specific mode flag handlers enable & disable

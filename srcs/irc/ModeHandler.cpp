@@ -4,7 +4,7 @@
 #include "ConnectionManager.hpp"
 #include "Channel.hpp"
 #include "ModeParser.hpp"
-#include "Parsing.hpp"
+#include "RequestParser.hpp"
 #include "reply.hpp"
 #include <cctype>
 #include <cstdlib>
@@ -108,9 +108,9 @@ bool ModeHandler::containsInvalidModeString(std::string modes)
 	return (false);
 }
 
-bool ModeHandler::containsInvalidModeChar(char mode)
+bool ModeHandler::containsInvalidModeChar(char modeChar)
 {
-	if (!handlers.count(mode))
+	if (!handlers.count(modeChar))
 	{
 		return (true);
 	}
@@ -169,9 +169,9 @@ bool ModeHandler::parseModeString()
 
 void ModeHandler::extractArguments()
 {
-	if (message.checkCommandArgumentList("mode modeArguments"))
+	if (message.checkCommandArgumentList("modeChar modeArguments"))
 	{
-		modeArguments = message.getCommandArgumentList("mode modeArguments");
+		modeArguments = message.getCommandArgumentList("modeChar modeArguments");
 		return;
 	}
 }

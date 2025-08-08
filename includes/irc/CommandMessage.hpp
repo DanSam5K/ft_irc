@@ -2,7 +2,7 @@
 #define COMMAND_MESSAGE_HPP
 
 #include "ft_irc.hpp"
-#include "Parsing.hpp"
+#include "RequestParser.hpp"
 #include "User.hpp"
 
 #define MESSAGE_MAX_SIZE 512
@@ -17,9 +17,9 @@ class CommandMessage
 		// std::map<std::string, std::list<std::string> > _argumentList;
 
 		User &_originUser;
-		Parsing *parser;
+		RequestParser *parser;
 
-		Parsing get_parser();
+		RequestParser get_parser();
 
 	public:
 		CommandMessage(User &userRef, std::string &rawInput);
