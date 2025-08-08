@@ -436,23 +436,23 @@ const char* Channel::InvalidChannelNameException::what() const throw()
 
 std::string Channel::getModeString() const
 {
-	std::string modestring = "+";
+	std::string rawModeString = "+";
 
 	if (usersLimitEnabled)
 	{
-		modestring += "l";
+		rawModeString += "l";
 	}
 	if (guestUsersOnly)
 	{
-		modestring += "i";
+		rawModeString += "i";
 	}
 	if (passwordEnabled)
 	{
-		modestring += "k";
+		rawModeString += "k";
 	}
 	if (blockedTopic)
 	{
-		modestring += "t";
+		rawModeString += "t";
 	}
-	return modestring;
+	return rawModeString;
 }

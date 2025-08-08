@@ -6,7 +6,7 @@ PasswordManager::PasswordManager(const std::string &connectionPassword) {
 	if (connectionPassword.empty())
 	{
 		logActionUtils::info("PasswordManager: No password provided, using default password");
-		hashedConnectionPassword = DEFAULT_CONN_PASSWORD_HASH;
+		hashedConnectionPassword = DEFAULT_CONN_PASSWORD_HPPASH;
 		return ;
 	}
 	hashedConnectionPassword = computeSHA256(connectionPassword);

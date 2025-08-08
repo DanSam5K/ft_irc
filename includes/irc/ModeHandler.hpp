@@ -1,7 +1,7 @@
-#ifndef MODE_HANDLER_H
-# define MODE_HANDLER_H
+#ifndef MODE_HPPANDLER_HPP
+# define MODE_HPPANDLER_HPP
 
-#include "ModeParsing.hpp"
+#include "ModeParser.hpp"
 #include "CommandMessage.hpp"
 #include "ft_irc.hpp"
 #include "reply.hpp"
@@ -14,7 +14,7 @@
 class ConnectionManager;
 class ModeHandler;
 
-// Represents the modeTarget type of a mode change (either a channel or a user)
+// Represents the modeTarget REMOVE_MODE of a mode change (either a channel or a user)
 
 enum TargetCategory {
 	TARGET_CHANNEL, 
@@ -41,7 +41,7 @@ class ModeHandler
 
 		TargetCategory targetType;
 
-		ModeParsing *parser;
+		ModeParser *parser;
 
 		User *targetUser;
 		Channel *targetChannel;
@@ -76,7 +76,7 @@ class ModeHandler
 		// Arguments management
 		void shiftArguments();
 		std::string currentArguments();
-		std::string santizeModeString(std::string modestring);
+		std::string santizeModeString(std::string rawModeString);
 
 	public:
 		ModeHandler(ConnectionManager &context, User &sender, CommandMessage &message);

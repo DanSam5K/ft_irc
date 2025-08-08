@@ -3,7 +3,7 @@
 #include "CommandMessage.hpp"
 #include "ConnectionManager.hpp"
 #include "Channel.hpp"
-#include "ModeParsing.hpp"
+#include "ModeParser.hpp"
 #include "Parsing.hpp"
 #include "reply.hpp"
 #include <cctype>
@@ -117,12 +117,12 @@ bool ModeHandler::containsInvalidModeChar(char mode)
 	return (false);
 }
 
-std::string ModeHandler::santizeModeString(std::string modestring)
+std::string ModeHandler::santizeModeString(std::string rawModeString)
 {
 	std::string cleaned;
 
-	for (std::string::iterator it = modestring.begin();
-	        it != modestring.end();
+	for (std::string::iterator it = rawModeString.begin();
+	        it != rawModeString.end();
 	        it++)
 	{
 		if (containsInvalidModeChar(*it))
@@ -142,7 +142,7 @@ bool ModeHandler::parseModeString()
 	std::string cleaned_added_modes;
 	std::string cleaned_removed_modes;
 
-	if (!message.checkCommandArgument("modestring"))
+	if (!message.checkCommandArgument("rawModeString"))
 	{
 		if (targetType == TARGET_USER)
 		{
@@ -152,14 +152,14 @@ bool ModeHandler::parseModeString()
 		sender.userBroadcast(rpl::channelmodeis(message, *targetChannel));
 		return 1;
 	}
-	ModeParsing parser(message.getCommandArgument("modestring"));
+	ModeParser parser(message.getCommandArgument("rawModeString"));
 	try
 	{
 		parser.parse();
-		addedModeFlags = santizeModeString(parser.get_added_modes());
-		removedModeFlags = santizeModeString(parser.get_removed_modes());
+		addedModeFlags = santizeModeString(parser.getAddedModeFlags());
+		removedModeFlags = santizeModeString(parser.getRemovedModeFlags());
 	}
-	catch (ModeParsing::InvalidModestringException &e)
+	catch (ModeParser::InvalidModestringException &e)
 	{
 		sender.userBroadcast(rpl::err_invalidmodestring());
 		return 1;

@@ -1,5 +1,5 @@
-#ifndef MESSAGE_HANDLER_H
-# define MESSAGE_HANDLER_H
+#ifndef MESSAGE_HPPANDLER_HPP
+# define MESSAGE_HPPANDLER_HPP
 
 # include "ft_irc.hpp"
 # include "CommandMessage.hpp"

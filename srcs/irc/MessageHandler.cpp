@@ -1,6 +1,6 @@
 #include "MessageHandler.hpp"
 #include "ModeHandler.hpp"
-#include "ModeParsing.hpp"
+#include "ModeParser.hpp"
 #include "ConnectionManager.hpp"
 #include "Channel.hpp"
 #include "Parsing.hpp"
