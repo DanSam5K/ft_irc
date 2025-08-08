@@ -3,7 +3,7 @@
 
 #include <exception>
 #include "ft_irc.hpp"
-#include "Tokenizer.hpp"
+#include "InputTokenizer.hpp"
 
 
 enum ArgumentType {
@@ -21,7 +21,7 @@ class RequestParser
 
 		std::string command;
 
-		Tokenizer tokenizer;
+		InputTokenizer tokenizer;
 
 		std::vector<std::string> parsedTokens;
 		unsigned int	currentIndex;

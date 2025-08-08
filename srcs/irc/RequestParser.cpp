@@ -5,7 +5,7 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include "Tokenizer.hpp"
+#include "InputTokenizer.hpp"
 
 #define NUMBER_CMD 24
 
@@ -30,7 +30,7 @@ std::string params[NUMBER_CMD][10] = {
 ArgumentType params_states[NUMBER_CMD][10] = {{OPTIONAL_ARG}, {OPTIONAL_ARG}, {}, {}, {REQUIRED}, {REQUIRED, OPTIONAL_ARG}, {REQUIRED, REQUIRED, REQUIRED, REQUIRED}, {OPTIONAL_ARG}, {MULTIPLE, OPTIONAL_LIST}, {OPTIONAL_LIST}, {OPTIONAL_LIST, OPTIONAL_ARG}, {REQUIRED, OPTIONAL_ARG, OPTIONAL_ARG}, {MULTIPLE, MULTIPLE, OPTIONAL_ARG}, {MULTIPLE, OPTIONAL_ARG}, {REQUIRED, OPTIONAL_ARG, MULTI_CHOICE}, {OPTIONAL_ARG}, {OPTIONAL_ARG}, {REQUIRED, MULTIPLE, OPTIONAL_ARG}, {REQUIRED, REQUIRED}, {REQUIRED, OPTIONAL_ARG}, {REQUIRED}, {REQUIRED}};
 
 
-RequestParser::RequestParser(std::string rawInput) : tokenizer(Tokenizer(
+RequestParser::RequestParser(std::string rawInput) : tokenizer(InputTokenizer(
 	            rawInput)), currentIndex(0)
 {
 	tokenizer.tokenize();
