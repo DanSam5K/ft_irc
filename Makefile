@@ -6,7 +6,7 @@
 #    By: dsamuel <dsamuel@student.42wolfsburg.de    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/07/31 17:46:39 by dsamuel           #+#    #+#              #
-#    Updated: 2025/08/04 16:05:03 by dsamuel          ###   ########.fr        #
+#    Updated: 2025/08/08 19:58:56 by dsamuel          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ OBJ_DIR := objects
 
 # File extensions
 SRC_EXT := cpp
-HDR_EXT := hpp h
+HDR_EXT := hpp
 
 # Compiler & Flags
 CXX := c++
@@ -42,7 +42,7 @@ OBJ := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SRC:.$(SRC_EXT)=.o))
 # Libraries (none currently required, placeholder)
 LIBS :=
 
-# Default target
+# Default modeTarget
 .PHONY: all
 all: $(NAME)
 

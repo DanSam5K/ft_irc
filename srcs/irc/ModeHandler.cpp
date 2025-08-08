@@ -74,7 +74,7 @@ std::string ModeHandler::currentArguments()
 bool ModeHandler::determineTargetType()
 {
 
-	if (is_channel(modeTarget))
+	if (confirmChannel(modeTarget))
 	{
 		targetType = TARGET_CHANNEL;
 		if (!context.checkChannelExist(modeTarget))
