@@ -45,7 +45,7 @@ RequestParser CommandMessage::get_parser()
 
 std::string CommandMessage::getCommandArgument(const std::string &argumentName) const
 {
-	if (parser->has_arg(argumentName))
+	if (parser->containsArgument(argumentName))
 	{
 		return (parser->getCommandArgument(argumentName));
 	}
@@ -69,7 +69,7 @@ std::list<std::string> CommandMessage::getCommandArgumentList(const std::string 
 
 bool CommandMessage::checkCommandArgument(const std::string argumentName) const
 {
-	return (parser->has_arg(argumentName));
+	return (parser->containsArgument(argumentName));
 }
 
 bool CommandMessage::checkCommandArgumentList(const std::string argumentName) const

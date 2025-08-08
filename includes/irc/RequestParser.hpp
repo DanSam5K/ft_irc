@@ -6,7 +6,14 @@
 #include "Tokenizer.hpp"
 
 
-enum ArgumentType {Mandatory, Optional, List, ListOptional, MultiOptional, Special};
+enum ArgumentType {
+	REQUIRED, 
+	OPTIONAL_ARG, 
+	MULTIPLE, 
+	OPTIONAL_LIST, 
+	MULTI_CHOICE, 
+	// SPECIAL_CASE
+};
 
 class RequestParser
 {
@@ -16,53 +23,58 @@ class RequestParser
 
 		Tokenizer tokenizer;
 
-		std::vector<std::string> tokens;
-		unsigned int	current;
+		std::vector<std::string> parsedTokens;
+		unsigned int	currentIndex;
 
-		std::map<std::string, std::string> args;
-		std::map<std::string, std::list<std::string> > args_lists;
-		void command_to_upper(std::string &command);
+		std::map<std::string, std::string> parsedArguments;
+		std::map<std::string, std::list<std::string> > argumentLists;
+		void normalizeCommand(std::string &command);
+
 	public:
 
-		RequestParser(std::string raw_content);
+		RequestParser(std::string rawInput);
 		virtual ~RequestParser();
-		std::string get_current_token();
-		bool set_current_arg(std::string arg_name);
-		bool set_current_arg_list(std::string arg_name);
+		
+		std::string getCurrentToken();
+		bool setCurrentArgument(std::string argName);
+		bool setCurrentArgumentList(std::string argName);
 		void parse();
 		void shiftArguments();
 
-		class TooManyParamsException : public std::exception
-		{
-			public:
-				virtual const char* what() const throw();
-		};
-
-		class NeedMoreParamsException : public std::exception
-		{
-			public:
-				virtual const char* what() const throw();
-		};
-
-		class UnknownCommandException : public std::exception
-		{
-			public:
-				virtual const char* what() const throw();
-		};
-		void parse_no_arg();
-		void parse_simple();
-		void parse_mode();
+		void parseNone();
+		// void parseBasic();
+		// void parseModes();
+		void parseAdvanced();
+		
 		std::string getCommandMessage();
-		void parse_complex();
-		bool set_current_arg(std::string arg_name, ArgumentType arg_type);
-		std::list<std::string> get_rest_tokens(std::string current_token);
-		std::list<std::string> arg_to_list(std::string current_token);
-		std::string getCommandArgument(std::string arg_name);
-		std::list<std::string> getCommandArgumentList(std::string arg_name);
+		bool setCurrentArgument(std::string argName, ArgumentType argType);
+		std::list<std::string> collectRemainingTokens(std::string currentToken);
+		std::list<std::string> splitToList(std::string currentToken);
+		std::string getCommandArgument(std::string argName);
+		std::list<std::string> getCommandArgumentList(std::string argName);
+		
+		bool containsArgument(std::string argName);
+		std::vector<std::string> getAllTokens();
+		bool checkCommandArgumentList(std::string argName);
 
-		bool has_arg(std::string arg_name);
-		std::vector<std::string> get_tokens();
-		bool checkCommandArgumentList(std::string arg_name);
-};
-
-#endif /* PARSING_HPP */
+		class TooManyArgumentsException : public std::exception
+		{
+			public:
+				virtual const char* what() const throw();
+		};
+	
+		class MissingArgumentsException : public std::exception
+		{
+			public:
+				virtual const char* what() const throw();
+		};
+	
+		class InvalidCommandException : public std::exception
+		{
+			public:
+				virtual const char* what() const throw();
+		};
+	};
+	
+	#endif
+	

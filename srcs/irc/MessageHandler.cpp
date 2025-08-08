@@ -59,7 +59,7 @@ CommandMessage *MessageHandler::buildCommandMessage(User &sender,
 	{
 		message = new CommandMessage(sender, rawMessage);
 	}
-	catch (RequestParser::UnknownCommandException &e)
+	catch (RequestParser::InvalidCommandException &e)
 	{
 		sender.userBroadcast(rpl::err_unknowncommand(sender, ""));
 		throw std::runtime_error(e.what());
@@ -77,17 +77,17 @@ void MessageHandler::checkMessageValidity(User &sender, CommandMessage &message)
 	{
 		message.processInput();
 	}
-	catch (RequestParser::TooManyParamsException &e)
+	catch (RequestParser::TooManyArgumentsException &e)
 	{
 		sender.userBroadcast(rpl::err_toomanyparams(sender, message.getCommandMessage()));
 		throw std::runtime_error(e.what());
 	}
-	catch (RequestParser::NeedMoreParamsException &e)
+	catch (RequestParser::MissingArgumentsException &e)
 	{
 		sender.userBroadcast(rpl::err_needmoreparams(sender, message.getCommandMessage()));
 		throw std::runtime_error(e.what());
 	}
-	catch (RequestParser::UnknownCommandException &e)
+	catch (RequestParser::InvalidCommandException &e)
 	{
 		sender.userBroadcast(rpl::err_unknowncommand(sender, message.getCommandMessage()));
 		throw std::runtime_error(e.what());
@@ -123,7 +123,7 @@ void MessageHandler::configureMessageHandlers()
 {
 	handle.insert(handlerPair("ADMIN", &MessageHandler::adminCommandHandler));
 	handle.insert(handlerPair("CAP", &MessageHandler::capRequestHandler));
-	handle.insert(handlerPair("INFO", &MessageHandler::infoCommandHandler));
+	handle.insert(handlerPair("STATUS", &MessageHandler::infoCommandHandler));
 	handle.insert(handlerPair("JOIN", &MessageHandler::joinCommandHandler));
 	handle.insert(handlerPair("KICK", &MessageHandler::kickCommandHandler));
 	handle.insert(handlerPair("LIST", &MessageHandler::listCommandHandler));
