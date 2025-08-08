@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include "RequestParser.hpp"
 
-CommandMessage::CommandMessage(User &userRef, std::string &rawInput) : _originUser(userRef),
+CommandMessage::CommandMessage(ClientUser &userRef, std::string &rawInput) : _originUser(userRef),
 	parser(NULL)
 {
 	if (rawInput.size() > MESSAGE_MAX_SIZE)
@@ -77,7 +77,7 @@ bool CommandMessage::checkCommandArgumentList(const std::string argumentName) co
 	return (parser->checkCommandArgumentList(argumentName));
 }
 
-User &CommandMessage::getMessageSender() const
+ClientUser &CommandMessage::getMessageSender() const
 {
 	return (_originUser);
 }

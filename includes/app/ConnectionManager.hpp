@@ -11,18 +11,18 @@
 # define FALLBACK_CHANNEL "*"
 
 class Application;
-class User;
+class ClientUser;
 class Channel;
 
 class ConnectionManager
 {
 	private:
-		typedef std::pair<std::string, User *> socketUserPair;
-		typedef std::pair<int, User *> nickNameUserPair;
+		typedef std::pair<std::string, ClientUser *> socketUserPair;
+		typedef std::pair<int, ClientUser *> nickNameUserPair;
 		typedef std::pair<std::string, Channel *> channelNamePair;
 
-		std::map<int, User *> _pendingUsers;
-		std::map<std::string, User *> _activeUsers;
+		std::map<int, ClientUser *> _pendingUsers;
+		std::map<std::string, ClientUser *> _activeUsers;
 		std::map<std::string, Channel *> _channels;
 
 		Application &_appInstance;
@@ -33,48 +33,48 @@ class ConnectionManager
 		ConnectionManager(const ConnectionManager &src);
 		ConnectionManager &operator=(const ConnectionManager &other);
 
-		void removeActiveUser(User &user);
-		void removePendingUser(User &user);
+		void removeActiveUser(ClientUser &user);
+		void removePendingUser(ClientUser &user);
 		void setupChannel(std::string name);
 
 	public:
 		ConnectionManager(Application &_appInstance, PasswordManager &_passHandler);
 		virtual ~ConnectionManager();
 
-		// User lifecycle
+		// ClientUser lifecycle
 		void registerPendingUser(int socket_fd);
-		void promoteUserToActive(User &user);
-		void disconnectUser(User &user);
+		void promoteUserToActive(ClientUser &user);
+		void disconnectUser(ClientUser &user);
 		void disconnectUserBySocket(int socket_fd);
-		void forciblyDisconnect(User &user);
+		void forciblyDisconnect(ClientUser &user);
 
 		// Channel Management
-		void setupChannelForUser(User &user, const std::string &chanName);
+		void setupChannelForUser(ClientUser &user, const std::string &chanName);
 		void deleteChannel(Channel &channel);
-		void updateUserNickname(User &user, const std::string &newNickname);
+		void updateUserNickname(ClientUser &user, const std::string &newNickname);
 
 		// IRC command dispatcher
-		void processClientCommand(User &sender, const std::string &rawMessage);
+		void processClientCommand(ClientUser &sender, const std::string &rawMessage);
 
 		// Accessors
-		User &getUserBySocket(int socket_fd);
-		User &getUserByNickname(const std::string &nickname);
+		ClientUser &getUserBySocket(int socket_fd);
+		ClientUser &getUserByNickname(const std::string &nickname);
 		bool checkUserNicknameExist(const std::string &nickname);
 
 		Channel &getChannel(const std::string &name);
 		Channel &getDefaultChannel();
 		std::list<std::string> listAllChannelNames();
 
-		// User <-> Channel Relations
-		void joinUserToChannel(User &user, const std::string &channelName);
-		void removeUserFromChannel(User &user, const std::string &channelName);
-		void removeUserFromAllChannels(User &user);
+		// ClientUser <-> Channel Relations
+		void joinUserToChannel(ClientUser &user, const std::string &channelName);
+		void removeUserFromChannel(ClientUser &user, const std::string &channelName);
+		void removeUserFromAllChannels(ClientUser &user);
 
 		bool checkChannelExist(const std::string &name);
-		bool checkUserInAnyChannel(User &user);
+		bool checkUserInAnyChannel(ClientUser &user);
 
-		std::list<Channel *> getUserChannels(User &user);
-		std::list<User *> getMutualChannelUsers(User &user);
+		std::list<Channel *> getUserChannels(ClientUser &user);
+		std::list<ClientUser *> getMutualChannelUsers(ClientUser &user);
 
 		// Security
 		void verifyConnectionPassword(const std::string &password);

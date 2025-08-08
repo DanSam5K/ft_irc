@@ -20,7 +20,7 @@ MessageHandler::MessageHandler(ConnectionManager &context) : context(context)
 
 MessageHandler::~MessageHandler() {}
 
-void MessageHandler::processClientCommand(User &sender, const std::string &rawMessage)
+void MessageHandler::processClientCommand(ClientUser &sender, const std::string &rawMessage)
 {
 	CommandMessage *message = NULL;
 
@@ -51,7 +51,7 @@ void MessageHandler::processClientCommand(User &sender, const std::string &rawMe
 	}
 }
 
-CommandMessage *MessageHandler::buildCommandMessage(User &sender,
+CommandMessage *MessageHandler::buildCommandMessage(ClientUser &sender,
         std::string rawMessage)
 {
 	CommandMessage *message = NULL;
@@ -71,7 +71,7 @@ CommandMessage *MessageHandler::buildCommandMessage(User &sender,
 	return (message);
 }
 
-void MessageHandler::checkMessageValidity(User &sender, CommandMessage &message)
+void MessageHandler::checkMessageValidity(ClientUser &sender, CommandMessage &message)
 {
 	try
 	{
@@ -98,10 +98,10 @@ void MessageHandler::checkMessageValidity(User &sender, CommandMessage &message)
 	}
 }
 
-bool MessageHandler::checkMessageEligibility(User &sender, CommandMessage &message)
+bool MessageHandler::checkMessageEligibility(ClientUser &sender, CommandMessage &message)
 {
 	std::string command = message.getCommandMessage();
-	if (sender.is_fully_registered() == true)
+	if (sender.confirmFullyRegistered() == true)
 	{
 		return (true);
 	}
@@ -146,7 +146,7 @@ void MessageHandler::configureMessageHandlers()
 
 void MessageHandler::adminCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	if (message.checkCommandArgument("modeTarget") && message.getCommandArgument("modeTarget") != SERVER_NAME)
 	{
 		sender.userBroadcast(rpl::err_nosuchserver(sender, message.getCommandArgument("modeTarget")));
@@ -161,7 +161,7 @@ void MessageHandler::adminCommandHandler(CommandMessage &message)
 void MessageHandler::inviteCommandHandler(CommandMessage &message)
 {
 	// TODO: no problem if no such channel
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	std::string channel_name = message.getCommandArgument("channel");
 	std::string user_nickname = message.getCommandArgument("nickname");
 
@@ -170,7 +170,7 @@ void MessageHandler::inviteCommandHandler(CommandMessage &message)
 		sender.userBroadcast(rpl::err_nosuchnick(sender, user_nickname));
 		return;
 	}
-	User &user = context.getUserByNickname(user_nickname);
+	ClientUser &user = context.getUserByNickname(user_nickname);
 	if (!context.checkChannelExist(channel_name))
 	{
 		sender.userBroadcast(rpl::inviting(user, message));
@@ -201,7 +201,7 @@ void MessageHandler::inviteCommandHandler(CommandMessage &message)
 
 void MessageHandler::topicCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	std::string channel_name = message.getCommandArgument("channel");
 
 	if (!context.checkChannelExist(channel_name))
@@ -246,7 +246,7 @@ void MessageHandler::capRequestHandler(CommandMessage &message)
 
 void MessageHandler::infoCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	if (message.checkCommandArgument("modeTarget") && message.getCommandArgument("modeTarget") != SERVER_NAME)
 	{
 		sender.userBroadcast(rpl::err_nosuchserver(sender, message.getCommandArgument("modeTarget")));
@@ -260,7 +260,7 @@ void MessageHandler::infoCommandHandler(CommandMessage &message)
 
 void MessageHandler::joinCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> chan_names = message.getCommandArgumentList("channel");
 	if (chan_names.empty())
 	{
@@ -321,7 +321,7 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 				else
 				{
 					context.joinUserToChannel(sender, *chans);
-					channel.revokeInvite(sender.get_nickname());
+					channel.revokeInvite(sender.getNickname());
 					channel.broadcast(rpl::join_channel(sender, channel));
 					sender.userBroadcast(rpl::topic(message, channel));
 					sender.userBroadcast(rpl::namreply(sender, channel));
@@ -331,7 +331,7 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 		}
 		catch (Channel::AlreadyInChannelException &e)
 		{
-			logActionUtils::warn("JOIN: User " + sender.get_nickname() + " is already a member of channel " + *chans);
+			logActionUtils::warn("JOIN: ClientUser " + sender.getNickname() + " is already a member of channel " + *chans);
 		}
 		catch (std::exception &e)
 		{
@@ -343,7 +343,7 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 
 void MessageHandler::kickCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> channels = message.getCommandArgumentList("channel");
 	std::list<std::string> users = message.getCommandArgumentList("user");
 	if (channels.size() > 1 && channels.size() != users.size())
@@ -381,7 +381,7 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 				                   channel.getChannelName()));
 				return;
 			}
-			User &user = context.getUserByNickname(*it);
+			ClientUser &user = context.getUserByNickname(*it);
 			if (!channel.confirmInChannelByUser(user))
 			{
 
@@ -391,7 +391,7 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 			}
 			if (message.getCommandArgument("comment") == "")
 			{
-				channel.broadcast(rpl::kick(sender, user, channel, sender.get_nickname()));
+				channel.broadcast(rpl::kick(sender, user, channel, sender.getNickname()));
 			}
 			else
 			{
@@ -431,7 +431,7 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 				                   channel.getChannelName()));
 				return;
 			}
-			User &user = context.getUserByNickname(user_name);
+			ClientUser &user = context.getUserByNickname(user_name);
 			if (!channel.confirmInChannelByUser(user))
 			{
 
@@ -441,7 +441,7 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 			}
 			if (message.getCommandArgument("comment") == "")
 			{
-				channel.broadcast(rpl::kick(sender, user, channel, sender.get_nickname()));
+				channel.broadcast(rpl::kick(sender, user, channel, sender.getNickname()));
 			}
 			else
 			{
@@ -456,7 +456,7 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 
 void MessageHandler::listCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> channels;
 
 	sender.userBroadcast(rpl::liststart(sender));
@@ -484,7 +484,7 @@ void MessageHandler::listCommandHandler(CommandMessage &message)
 void MessageHandler::modeCommandHandler(CommandMessage &message)
 {
 
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 
 	ModeHandler handler(context, sender, message);
 	return;
@@ -492,7 +492,7 @@ void MessageHandler::modeCommandHandler(CommandMessage &message)
 
 void MessageHandler::namesCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> chan_names;
 	bool show_default_chan = false;
 	if (message.checkCommandArgumentList("channel"))
@@ -535,7 +535,7 @@ void MessageHandler::namesCommandHandler(CommandMessage &message)
 
 void MessageHandler::nickChangeHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	std::string nickname = message.getCommandArgument("nickname");
 	if (context.checkUserNicknameExist(nickname) == true)
 	{
@@ -544,9 +544,9 @@ void MessageHandler::nickChangeHandler(CommandMessage &message)
 	}
 	try
 	{
-		bool user_is_already_registered = sender.is_fully_registered();
-		std::string old_id = sender.get_identifier();
-		sender.set_nickname(nickname);
+		bool user_is_already_registered = sender.confirmFullyRegistered();
+		std::string old_id = sender.getIdentifier();
+		sender.setNickname(nickname);
 		if (user_is_already_registered)
 		{
 			sender.userBroadcast(rpl::confirmation(old_id, message));
@@ -556,11 +556,11 @@ void MessageHandler::nickChangeHandler(CommandMessage &message)
 			greetNewUser(sender);
 		}
 	}
-	catch (User::InvalidNicknameException &e)
+	catch (ClientUser::InvalidNicknameException &e)
 	{
 		sender.userBroadcast(rpl::err_erroneusnickname(sender, nickname));
 	}
-	catch (User::NicknameTooLongException &e)
+	catch (ClientUser::NicknameTooLongException &e)
 	{
 		sender.userBroadcast(rpl::err_nicknametoolong(sender, nickname));
 	}
@@ -568,9 +568,9 @@ void MessageHandler::nickChangeHandler(CommandMessage &message)
 
 void MessageHandler::partCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> chan_names = message.getCommandArgumentList("channel");
-	std::string part_msg = sender.get_nickname();
+	std::string part_msg = sender.getNickname();
 	if (message.checkCommandArgument("Part CommandMessage"))
 	{
 		part_msg = message.getCommandArgument("Part CommandMessage");
@@ -603,9 +603,9 @@ void MessageHandler::partCommandHandler(CommandMessage &message)
 
 void MessageHandler::passCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 
-	if (sender.is_fully_registered())
+	if (sender.confirmFullyRegistered())
 	{
 		sender.userBroadcast(rpl::err_alreadyregistred(sender));
 		return ;
@@ -618,7 +618,7 @@ void MessageHandler::passCommandHandler(CommandMessage &message)
 	try
 	{
 		context.verifyConnectionPassword(message.getCommandArgument("password"));
-		sender.set_correct_password();
+		sender.authorizePassword();
 	}
 	catch (PasswordManager::InvalidPasswordException &e)
 	{
@@ -633,7 +633,7 @@ void MessageHandler::passCommandHandler(CommandMessage &message)
 
 void MessageHandler::privateMessageHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	std::string toNickname = message.getCommandArgument("msgtarget");
 	std::string text = "";
 	if (message.checkCommandArgument("text to be sent"))
@@ -647,7 +647,7 @@ void MessageHandler::privateMessageHandler(CommandMessage &message)
 	}
 	if (context.checkUserNicknameExist(toNickname) == true)
 	{
-		User &toUser = context.getUserByNickname(toNickname);
+		ClientUser &toUser = context.getUserByNickname(toNickname);
 		toUser.userBroadcast(rpl::forward(sender, message));
 	}
 	else if (context.checkChannelExist(toNickname) == true)
@@ -670,12 +670,12 @@ void MessageHandler::privateMessageHandler(CommandMessage &message)
 
 void MessageHandler::quitCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	if (context.checkUserInAnyChannel(sender) == true)
 	{
-		std::list<User *> users_in_same_channels = context.getMutualChannelUsers(
+		std::list<ClientUser *> users_in_same_channels = context.getMutualChannelUsers(
 		            sender);
-		std::list<User *>::iterator it = users_in_same_channels.begin();
+		std::list<ClientUser *>::iterator it = users_in_same_channels.begin();
 		for (; it != users_in_same_channels.end(); it++)
 		{
 
@@ -687,32 +687,32 @@ void MessageHandler::quitCommandHandler(CommandMessage &message)
 
 void MessageHandler::summonCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	sender.userBroadcast(rpl::err_summondisabled(sender));
 }
 
 void MessageHandler::userCommandHandler(CommandMessage &message)
 {
 
-	User &sender = message.getMessageSender();
-	if (sender.is_fully_registered())
+	ClientUser &sender = message.getMessageSender();
+	if (sender.confirmFullyRegistered())
 	{
 		sender.userBroadcast(rpl::err_alreadyregistred(sender));
 		return ;
 	}
-	else if (sender.has_user_info())
+	else if (sender.checkAllUserDetails())
 	{
 		sender.userBroadcast(rpl::err_notregistered(sender));
 		return;
 	}
 	try
 	{
-		sender.set_username(message.getCommandArgument("user"));
-		sender.set_hostname(message.getCommandArgument("unused"));
-		sender.set_realname(message.getCommandArgument("realname"));
+		sender.setUsername(message.getCommandArgument("user"));
+		sender.setHostname(message.getCommandArgument("unused"));
+		sender.setRealname(message.getCommandArgument("realname"));
 		greetNewUser(sender);
 	}
-	catch (User::InvalidUsernameException &e)
+	catch (ClientUser::InvalidUsernameException &e)
 	{
 		sender.userBroadcast(rpl::err_invalidusername());
 	}
@@ -724,19 +724,19 @@ void MessageHandler::userCommandHandler(CommandMessage &message)
 
 void MessageHandler::usersCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	sender.userBroadcast(rpl::err_usersdisabled(sender));
 }
 
 void MessageHandler::versionRequestHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 	sender.userBroadcast(rpl::server_version(sender));
 }
 
-void MessageHandler::greetNewUser(User &user)
+void MessageHandler::greetNewUser(ClientUser &user)
 {
-	if (user.has_nickname() == false || user.has_user_info() == false)
+	if (user.confirmNicknameExist() == false || user.checkAllUserDetails() == false)
 	{
 		return ;
 	}
@@ -756,7 +756,7 @@ void MessageHandler::greetNewUser(User &user)
 
 void MessageHandler::pingCommandHandler(CommandMessage &message)
 {
-	User &sender = message.getMessageSender();
+	ClientUser &sender = message.getMessageSender();
 
 	if (message.getCommandArgument("token") == "")
 	{

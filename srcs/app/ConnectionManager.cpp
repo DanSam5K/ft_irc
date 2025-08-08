@@ -28,26 +28,26 @@ ConnectionManager::~ConnectionManager()
 
 void ConnectionManager::registerPendingUser(int socket)
 {
-	User *newUser = new User(*this, socket);
+	ClientUser *newUser = new ClientUser(*this, socket);
 	_pendingUsers.insert(nickNameUserPair (socket, newUser));
 }
 
-void ConnectionManager::promoteUserToActive(User &user)
+void ConnectionManager::promoteUserToActive(ClientUser &user)
 {
-	if (user.passwordEnabled() == false || user.has_nickname() == false
-	        || user.has_user_info() == false)
+	if (user.passwordEnabled() == false || user.confirmNicknameExist() == false
+	        || user.checkAllUserDetails() == false)
 	{
 		return ;
 	}
-	_activeUsers.insert(socketUserPair(user.get_nickname(), &user));
-	_pendingUsers.erase(user.get_socket());
-	user.set_registered();
+	_activeUsers.insert(socketUserPair(user.getNickname(), &user));
+	_pendingUsers.erase(user.getSocket());
+	user.setRegistered();
 	joinUserToChannel(user, FALLBACK_CHANNEL);
 }
 
-void ConnectionManager::disconnectUser(User &user)
+void ConnectionManager::disconnectUser(ClientUser &user)
 {
-	if (user.is_fully_registered())
+	if (user.confirmFullyRegistered())
 	{
 		this->removeActiveUser(user);
 	}
@@ -59,15 +59,15 @@ void ConnectionManager::disconnectUser(User &user)
 
 void ConnectionManager::disconnectUserBySocket(int socket)
 {
-	User user = getUserBySocket(socket);
+	ClientUser user = getUserBySocket(socket);
 	disconnectUser(user);
 }
 
-void ConnectionManager::removeActiveUser(User &user)
+void ConnectionManager::removeActiveUser(ClientUser &user)
 {
 	logActionUtils::info("ConnectionManager: Removing registered user");
-	std::map<std::string, User *>::iterator it = _activeUsers.find(
-	            user.get_nickname());
+	std::map<std::string, ClientUser *>::iterator it = _activeUsers.find(
+	            user.getNickname());
 	if (it != _activeUsers.end())
 	{
 		removeUserFromAllChannels(*(it->second));
@@ -76,11 +76,11 @@ void ConnectionManager::removeActiveUser(User &user)
 	}
 }
 
-void ConnectionManager::removePendingUser(User &user)
+void ConnectionManager::removePendingUser(ClientUser &user)
 {
 	logActionUtils::info("ConnectionManager: Removing unregistered user");
-	std::map<int, User *>::iterator it = _pendingUsers.find(
-	        user.get_socket());
+	std::map<int, ClientUser *>::iterator it = _pendingUsers.find(
+	        user.getSocket());
 	if (it != _pendingUsers.end())
 	{
 		delete(it->second);
@@ -95,7 +95,7 @@ void ConnectionManager::setupChannel(std::string name)
 	_channels.insert(channelNamePair(channelName, newChannel));
 }
 
-void ConnectionManager::setupChannelForUser(User &user, const std::string &chanName)
+void ConnectionManager::setupChannelForUser(ClientUser &user, const std::string &chanName)
 {
 	Channel *newChannel = new Channel(chanName, user, _passHandler);
 	std::string channelName = string_to_lowercase(newChannel->getChannelName());
@@ -103,7 +103,7 @@ void ConnectionManager::setupChannelForUser(User &user, const std::string &chanN
 	newChannel->promoteOperatorByUser(user);
 }
 
-void ConnectionManager::joinUserToChannel(User &user, const std::string &chanName)
+void ConnectionManager::joinUserToChannel(ClientUser &user, const std::string &chanName)
 {
 	if (checkChannelExist(chanName) == false)
 	{
@@ -112,7 +112,7 @@ void ConnectionManager::joinUserToChannel(User &user, const std::string &chanNam
 	else
 	{
 		std::string channelName = string_to_lowercase(chanName);
-		logActionUtils::info("ConnectionManager: Adding user \"" + user.get_nickname() +
+		logActionUtils::info("ConnectionManager: Adding user \"" + user.getNickname() +
 		                 "\" to channel " + channelName);
 		_channels[channelName]->addUserToChannel(user);
 		if (chanName != FALLBACK_CHANNEL
@@ -123,7 +123,7 @@ void ConnectionManager::joinUserToChannel(User &user, const std::string &chanNam
 	}
 }
 
-void ConnectionManager::removeUserFromChannel(User &user, const std::string &chanName)
+void ConnectionManager::removeUserFromChannel(ClientUser &user, const std::string &chanName)
 {
 	if (checkChannelExist(chanName) == false)
 	{
@@ -132,20 +132,20 @@ void ConnectionManager::removeUserFromChannel(User &user, const std::string &cha
 	else
 	{
 		std::string channelName = string_to_lowercase(chanName);
-		logActionUtils::info("ConnectionManager: Removing user \"" + user.get_nickname() +
+		logActionUtils::info("ConnectionManager: Removing user \"" + user.getNickname() +
 		                 "\" from channel " + channelName);
 		_channels[channelName]->removeUserFromChannel(user);
 		_channels[channelName]->demoteOperatorByUser(user);
 		if (checkUserInAnyChannel(user) == false && channelName != FALLBACK_CHANNEL)
 		{
-			logActionUtils::info("ConnectionManager: Adding user \"" + user.get_nickname() +
+			logActionUtils::info("ConnectionManager: Adding user \"" + user.getNickname() +
 			                 "\" to channel *, because user is no longer in any channel");
 			_channels[FALLBACK_CHANNEL]->addUserToChannel(user);
 		}
 	}
 }
 
-void ConnectionManager::removeUserFromAllChannels(User &user)
+void ConnectionManager::removeUserFromAllChannels(ClientUser &user)
 {
 	std::list<Channel *> chans = getUserChannels(user);
 	std::list<Channel *>::iterator it = chans.begin();
@@ -155,7 +155,7 @@ void ConnectionManager::removeUserFromAllChannels(User &user)
 	}
 }
 
-bool ConnectionManager::checkUserInAnyChannel(User &user)
+bool ConnectionManager::checkUserInAnyChannel(ClientUser &user)
 {
 	std::map<std::string, Channel *>::iterator it = _channels.begin();
 	for (; it != _channels.end(); it++)
@@ -179,22 +179,22 @@ void ConnectionManager::deleteChannel(Channel &channel)
 	}
 }
 
-void ConnectionManager::processClientCommand(User &sender, const std::string &rawMessage)
+void ConnectionManager::processClientCommand(ClientUser &sender, const std::string &rawMessage)
 {
 	_messHandler->processClientCommand(sender, rawMessage);
 }
 
-User &ConnectionManager::getUserBySocket(int socket_fd)
+ClientUser &ConnectionManager::getUserBySocket(int socket_fd)
 {
-	std::map<int, User *>::iterator u_it = _pendingUsers.find(socket_fd);
+	std::map<int, ClientUser *>::iterator u_it = _pendingUsers.find(socket_fd);
 	if (u_it != _pendingUsers.end())
 	{
 		return (*_pendingUsers[socket_fd]);
 	}
-	std::map<std::string, User *>::iterator r_it = _activeUsers.begin();
+	std::map<std::string, ClientUser *>::iterator r_it = _activeUsers.begin();
 	for (; r_it != _activeUsers.end(); r_it++)
 	{
-		if (r_it->second->get_socket() == socket_fd)
+		if (r_it->second->getSocket() == socket_fd)
 		{
 			return (*r_it->second);
 		}
@@ -204,9 +204,9 @@ User &ConnectionManager::getUserBySocket(int socket_fd)
 	throw UserNotFoundException();
 }
 
-User &ConnectionManager::getUserByNickname(const std::string &nickname)
+ClientUser &ConnectionManager::getUserByNickname(const std::string &nickname)
 {
-	std::map<std::string, User *>::iterator it = _activeUsers.find(nickname);
+	std::map<std::string, ClientUser *>::iterator it = _activeUsers.find(nickname);
 	if (it != _activeUsers.end())
 	{
 		return (*_activeUsers[nickname]);
@@ -214,10 +214,10 @@ User &ConnectionManager::getUserByNickname(const std::string &nickname)
 	throw UserNotFoundException();
 }
 
-void ConnectionManager::updateUserNickname(User &user, const std::string &newNickname)
+void ConnectionManager::updateUserNickname(ClientUser &user, const std::string &newNickname)
 {
-	std::map<std::string, User *>::iterator it = _activeUsers.find(
-	            user.get_nickname());
+	std::map<std::string, ClientUser *>::iterator it = _activeUsers.find(
+	            user.getNickname());
 	if (it != _activeUsers.end())
 	{
 		std::list<Channel *> chans = getUserChannels(user);
@@ -227,7 +227,7 @@ void ConnectionManager::updateUserNickname(User &user, const std::string &newNic
 			(*it)->updateUserNickname(user, newNickname);
 		}
 		_activeUsers.insert(socketUserPair(newNickname, &user));
-		_activeUsers.erase(user.get_nickname());
+		_activeUsers.erase(user.getNickname());
 	}
 }
 
@@ -291,7 +291,7 @@ bool ConnectionManager::checkChannelExist(const std::string &name)
 	return (false);
 }
 
-std::list<Channel *> ConnectionManager::getUserChannels(User &user)
+std::list<Channel *> ConnectionManager::getUserChannels(ClientUser &user)
 {
 	std::list<Channel *> user_chans;
 	std::map<std::string, Channel *>::iterator it = _channels.begin();
@@ -305,15 +305,15 @@ std::list<Channel *> ConnectionManager::getUserChannels(User &user)
 	return (user_chans);
 }
 
-std::list<User *> ConnectionManager::getMutualChannelUsers(User &user)
+std::list<ClientUser *> ConnectionManager::getMutualChannelUsers(ClientUser &user)
 {
-	std::list<User *> usersInMutualChannel;
+	std::list<ClientUser *> usersInMutualChannel;
 	std::list<Channel *> chans = getUserChannels(user);
 	std::list<Channel *>::iterator it = chans.begin();
 	for (; it != chans.end(); it++)
 	{
-		std::list<User *> chan_users = (*it)->getUserList();
-		std::list<User *>::iterator uit = chan_users.begin();
+		std::list<ClientUser *> chan_users = (*it)->getUserList();
+		std::list<ClientUser *>::iterator uit = chan_users.begin();
 		for (; uit != chan_users.end(); uit++)
 		{
 			if (*uit != &user && is_in_list(usersInMutualChannel, *uit) == false)
@@ -327,25 +327,25 @@ std::list<User *> ConnectionManager::getMutualChannelUsers(User &user)
 
 void ConnectionManager::printPendingUsers() const
 {
-	std::map<int, User *>::const_iterator it = _pendingUsers.begin();
-	std::map<int, User *>::const_iterator it_end = _pendingUsers.end();
-	std::cout << "[INFO] ConnectionManager: Unregistered users :" << std::endl;
+	std::map<int, ClientUser *>::const_iterator it = _pendingUsers.begin();
+	std::map<int, ClientUser *>::const_iterator it_end = _pendingUsers.end();
+	std::cout << "[STATUS] ConnectionManager: Unregistered users :" << std::endl;
 	for (; it != it_end; it++)
 	{
-		std::cout << "\t[" << it->second->get_socket() << "] "
-		          << it->second->get_identifier() << std::endl;
+		std::cout << "\t[" << it->second->getSocket() << "] "
+		          << it->second->getIdentifier() << std::endl;
 	}
 }
 
 void ConnectionManager::printActiveUsers() const
 {
-	std::map<std::string, User *>::const_iterator it = _activeUsers.begin();
-	std::map<std::string, User *>::const_iterator it_end = _activeUsers.end();
-	std::cout << "[INFO] ConnectionManager: Registered users :" << std::endl;
+	std::map<std::string, ClientUser *>::const_iterator it = _activeUsers.begin();
+	std::map<std::string, ClientUser *>::const_iterator it_end = _activeUsers.end();
+	std::cout << "[STATUS] ConnectionManager: Registered users :" << std::endl;
 	for (; it != it_end; it++)
 	{
-		std::cout << "\t[" << it->second->get_socket() << "] "
-		          << it->second->get_identifier() << std::endl;
+		std::cout << "\t[" << it->second->getSocket() << "] "
+		          << it->second->getIdentifier() << std::endl;
 	}
 }
 
@@ -353,7 +353,7 @@ void ConnectionManager::printChannels() const
 {
 	std::map<std::string, Channel *>::const_iterator it = _channels.begin();
 	std::map<std::string, Channel *>::const_iterator it_end = _channels.end();
-	std::cout << "[INFO] ConnectionManager: Channels :" << std::endl;
+	std::cout << "[STATUS] ConnectionManager: Channels :" << std::endl;
 	for (; it != it_end; it++)
 	{
 		std::cout << "\t[" << it->second->getChannelName() << "] ";
@@ -371,9 +371,9 @@ void ConnectionManager::sendDirectMessage(int socket_fd, const std::string &mess
 	_appInstance.sendMessageToClient(socket_fd, message);
 }
 
-void ConnectionManager::forciblyDisconnect(User &user)
+void ConnectionManager::forciblyDisconnect(ClientUser &user)
 {
-	_appInstance.removeClient(user.get_socket());
+	_appInstance.removeClient(user.getSocket());
 }
 
 const char* ConnectionManager::UserNotFoundException::what() const throw()

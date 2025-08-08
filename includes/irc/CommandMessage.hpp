@@ -3,7 +3,7 @@
 
 #include "ft_irc.hpp"
 #include "RequestParser.hpp"
-#include "User.hpp"
+#include "ClientUser.hpp"
 
 #define MESSAGE_MAX_SIZE 512
 #define MESSAGE_MIN_SIZE 2
@@ -16,13 +16,13 @@ class CommandMessage
 		// std::map<std::string, std::string> _arguments;
 		// std::map<std::string, std::list<std::string> > _argumentList;
 
-		User &_originUser;
+		ClientUser &_originUser;
 		RequestParser *parser;
 
 		RequestParser get_parser();
 
 	public:
-		CommandMessage(User &userRef, std::string &rawInput);
+		CommandMessage(ClientUser &userRef, std::string &rawInput);
 		virtual ~CommandMessage();
 
 		std::string getCommandMessage();
@@ -33,7 +33,7 @@ class CommandMessage
 
 		void processInput();
 
-		User &getMessageSender() const;
+		ClientUser &getMessageSender() const;
 };
 
 #endif

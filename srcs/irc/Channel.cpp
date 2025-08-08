@@ -1,7 +1,7 @@
 #include "Channel.hpp"
 #include "ConnectionManager.hpp"
 #include "PasswordManager.hpp"
-#include "User.hpp"
+#include "ClientUser.hpp"
 #include "utils_logger.hpp"
 #include <cctype>
 #include <stdexcept>
@@ -22,15 +22,15 @@ Channel::Channel(std::string channelName,
 }
 
 Channel::Channel(std::string channelName,
-                  User &creator, PasswordManager &passwordHandler) : blockedTopic(false),
+                  ClientUser &creator, PasswordManager &passwordHandler) : blockedTopic(false),
 	guestUsersOnly(false),
 	passwordEnabled(false), usersLimitEnabled(false),
 	passwordHandler(passwordHandler)
 {
 	setChannelName(channelName);
-	setChannelCreator(creator.get_nickname());
+	setChannelCreator(creator.getNickname());
 	addUserToChannel(creator);
-	logActionUtils::info("User \"" + this->creatorNickname + "\" checkCommandArgument initialized channel",
+	logActionUtils::info("ClientUser \"" + this->creatorNickname + "\" checkCommandArgument initialized channel",
 					 this->channelName);
 
 }
@@ -97,43 +97,43 @@ std::string const &Channel::getModeFlags() const
 	return (this->modeFlags);
 }
 
-void Channel::addUserToChannel(User &user)
+void Channel::addUserToChannel(ClientUser &user)
 {
 	logActionUtils::info("Channel \"" + this->channelName + "\": Adding user \"" 
-						+ user.get_nickname() + "\" to the channel");
+						+ user.getNickname() + "\" to the channel");
 	if (confirmInChannelByUser(user) == true)
 	{
 		throw Channel::AlreadyInChannelException();
 	}
-	usersRegistry.insert(userNicknamePair(user.get_nickname(), &user));
-	if (user.get_nickname() == this->creatorNickname)
+	usersRegistry.insert(userNicknamePair(user.getNickname(), &user));
+	if (user.getNickname() == this->creatorNickname)
 	{
 		promoteOperatorByUser(user);
 	}
 }
 
-void Channel::removeUserFromChannel(User &user)
+void Channel::removeUserFromChannel(ClientUser &user)
 {
-	logActionUtils::info("Channel \"" + this->channelName + "\": User \"" + 
-					 user.get_nickname() + "\" checkCommandArgument been removed");
-	usersRegistry.erase(user.get_nickname());
-	operatorList.erase(user.get_nickname());
+	logActionUtils::info("Channel \"" + this->channelName + "\": ClientUser \"" + 
+					 user.getNickname() + "\" checkCommandArgument been removed");
+	usersRegistry.erase(user.getNickname());
+	operatorList.erase(user.getNickname());
 }
 
-void Channel::updateUserNickname(User &user, std::string new_nick)
+void Channel::updateUserNickname(ClientUser &user, std::string new_nick)
 {
-	std::map<std::string, User *>::iterator it = usersRegistry.find(user.get_nickname());
+	std::map<std::string, ClientUser *>::iterator it = usersRegistry.find(user.getNickname());
 	bool is_chan_creator = checkChannelCreatorByUser(user);
 	if (it != usersRegistry.end())
 	{
 		usersRegistry.insert(userNicknamePair(new_nick, &user));
-		usersRegistry.erase(user.get_nickname());
+		usersRegistry.erase(user.getNickname());
 		if (is_chan_creator == true)
 		{
 			setChannelCreator(new_nick);
 		}
 	}
-	int is_op = operatorList.erase(user.get_nickname());
+	int is_op = operatorList.erase(user.getNickname());
 	if (is_op)
 	{
 		operatorList.insert(new_nick);
@@ -183,14 +183,14 @@ bool Channel::confirmModePresence(char c)
 	return (false);
 }
 
-void Channel::promoteOperatorByUser(User &user)
+void Channel::promoteOperatorByUser(ClientUser &user)
 {
-	operatorList.insert(user.get_nickname());
+	operatorList.insert(user.getNickname());
 }
 
-void Channel::demoteOperatorByUser(User &user)
+void Channel::demoteOperatorByUser(ClientUser &user)
 {
-	operatorList.erase(user.get_nickname());
+	operatorList.erase(user.getNickname());
 }
 
 void Channel::demoteOperatorByNickname(std::string nick)
@@ -199,14 +199,14 @@ void Channel::demoteOperatorByNickname(std::string nick)
 }
 
 
-bool Channel::checkChannelOperatorByUser(User &user)
+bool Channel::checkChannelOperatorByUser(ClientUser &user)
 {
-	return (operatorList.count(user.get_nickname()) || checkChannelCreatorByUser(user));
+	return (operatorList.count(user.getNickname()) || checkChannelCreatorByUser(user));
 }
 
-bool Channel::checkChannelCreatorByUser(User &user)
+bool Channel::checkChannelCreatorByUser(ClientUser &user)
 {
-	if (user.get_nickname() == this->creatorNickname)
+	if (user.getNickname() == this->creatorNickname)
 	{
 		return (true);
 	}
@@ -249,19 +249,19 @@ bool Channel::checkChannelCreatorByNickname(std::string nickname)
 
 void Channel::broadcast(std::string message)
 {
-	std::map<std::string, User *>::iterator it = usersRegistry.begin();
+	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
 	for (; it != usersRegistry.end(); it++)
 	{
 		it->second->userBroadcast(message);
 	}
 }
 
-void Channel::broadcastExcept(std::string message, User &excludedUser)
+void Channel::broadcastExcept(std::string message, ClientUser &excludedUser)
 {
-	std::map<std::string, User *>::iterator it = usersRegistry.begin();
+	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
 	for (; it != usersRegistry.end(); it++)
 	{
-		if (it->first != excludedUser.get_nickname())
+		if (it->first != excludedUser.getNickname())
 		{
 			it->second->userBroadcast(message);
 		}
@@ -270,7 +270,7 @@ void Channel::broadcastExcept(std::string message, User &excludedUser)
 
 bool Channel::confirmInChannelByNickname(std::string nickname)
 {
-	std::map<std::string, User *>::iterator it = usersRegistry.find(nickname);
+	std::map<std::string, ClientUser *>::iterator it = usersRegistry.find(nickname);
 	if (it != usersRegistry.end())
 	{
 		return (true);
@@ -278,9 +278,9 @@ bool Channel::confirmInChannelByNickname(std::string nickname)
 	return (false);
 }
 
-bool Channel::confirmInChannelByUser(User &user)
+bool Channel::confirmInChannelByUser(ClientUser &user)
 {
-	std::map<std::string, User *>::iterator it = usersRegistry.find(user.get_nickname());
+	std::map<std::string, ClientUser *>::iterator it = usersRegistry.find(user.getNickname());
 	if (it != usersRegistry.end())
 	{
 		return (true);
@@ -290,7 +290,7 @@ bool Channel::confirmInChannelByUser(User &user)
 
 bool Channel::confirmChannelIsEmpty()
 {
-	std::map<std::string, User *>::iterator it = usersRegistry.begin();
+	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
 	if (it == usersRegistry.end())
 	{
 		return (true);
@@ -298,10 +298,10 @@ bool Channel::confirmChannelIsEmpty()
 	return (false);
 }
 
-std::list<User *> Channel::getUserList()
+std::list<ClientUser *> Channel::getUserList()
 {
-	std::list<User *> user_list;
-	std::map<std::string, User *>::iterator it = usersRegistry.begin();
+	std::list<ClientUser *> user_list;
+	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
 	for (; it != usersRegistry.end(); it++)
 	{
 		user_list.push_back(it->second);
@@ -318,7 +318,7 @@ unsigned int Channel::getUserCount()
 std::string Channel::getUserListString()
 {
 	std::string user_list;
-	std::map<std::string, User *>::iterator it = usersRegistry.begin();
+	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
 	for (; it != usersRegistry.end(); it++)
 	{
 		if (it != usersRegistry.begin())
@@ -414,9 +414,9 @@ bool Channel::checkRestrictionPoint() const
 }
 
 
-bool Channel::checkInvitedByUser(User &user) const
+bool Channel::checkInvitedByUser(ClientUser &user) const
 {
-	return guestUserNicknames.count(user.get_nickname());
+	return guestUserNicknames.count(user.getNickname());
 }
 
 bool Channel::checkInvitedByNickname(std::string nickname) const
@@ -426,7 +426,7 @@ bool Channel::checkInvitedByNickname(std::string nickname) const
 
 const char* Channel::AlreadyInChannelException::what() const throw()
 {
-	return ("User is already a member of the channel.");
+	return ("ClientUser is already a member of the channel.");
 }
 
 const char* Channel::InvalidChannelNameException::what() const throw()

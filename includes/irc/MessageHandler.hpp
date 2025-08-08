@@ -43,17 +43,17 @@ class MessageHandler
 		void pingCommandHandler(CommandMessage &message);
 		void pongCommandHandler(CommandMessage &message);
 
-		bool checkMessageEligibility(User &sender, CommandMessage &message);
-		CommandMessage *buildCommandMessage(User &sender, std::string rawMessage);
-		void checkMessageValidity(User &sender, CommandMessage &message);
-		void greetNewUser(User &user);
+		bool checkMessageEligibility(ClientUser &sender, CommandMessage &message);
+		CommandMessage *buildCommandMessage(ClientUser &sender, std::string rawMessage);
+		void checkMessageValidity(ClientUser &sender, CommandMessage &message);
+		void greetNewUser(ClientUser &user);
 		bool checkIsValidUsername(std::string username);
 
 	public:
 		MessageHandler(ConnectionManager &context);
 		virtual ~MessageHandler();
 
-		void processClientCommand(User &sender, const std::string &rawMessage);
+		void processClientCommand(ClientUser &sender, const std::string &rawMessage);
 };
 
 #endif

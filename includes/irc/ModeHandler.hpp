@@ -27,7 +27,7 @@ class ModeHandler
 {
 	private:
 		ConnectionManager &context;
-		User &sender;
+		ClientUser &sender;
 		CommandMessage &message;
 
 		std::map<char, std::map<TargetCategory, std::map<std::string, handler > > >
@@ -43,7 +43,7 @@ class ModeHandler
 
 		ModeParser *parser;
 
-		User *targetUser;
+		ClientUser *targetUser;
 		Channel *targetChannel;
 
 		// Internal setup methods
@@ -79,10 +79,10 @@ class ModeHandler
 		std::string santizeModeString(std::string rawModeString);
 
 	public:
-		ModeHandler(ConnectionManager &context, User &sender, CommandMessage &message);
+		ModeHandler(ConnectionManager &context, ClientUser &sender, CommandMessage &message);
 		virtual ~ModeHandler();
 
-		// void modeCommandHandler(CommandMessage &message, User &sender);
+		// void modeCommandHandler(CommandMessage &message, ClientUser &sender);
 };
 
 #endif

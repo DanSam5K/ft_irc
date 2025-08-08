@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <string>
 
-ModeHandler::ModeHandler(ConnectionManager &context, User &sender,
+ModeHandler::ModeHandler(ConnectionManager &context, ClientUser &sender,
                             CommandMessage &message) : context(context), sender(sender), message(message)
 {
 	modeTarget = message.getCommandArgument("modeTarget");
@@ -289,12 +289,12 @@ void ModeHandler::operatorChannelEnableHandler()
 	try
 	{
 		argument = currentArguments();
-		User &new_operator = context.getUserByNickname(
+		ClientUser &new_operator = context.getUserByNickname(
 		                          argument); // TODO: maybe specific response if exists
 		if (!targetChannel->confirmInChannelByUser(new_operator))
 		{
 			sender.userBroadcast(rpl::err_usernotinchannel(sender,
-			                   new_operator.get_nickname(), targetChannel->getChannelName()));
+			                   new_operator.getNickname(), targetChannel->getChannelName()));
 			return;
 		}
 		if (targetChannel->checkChannelOperatorByUser(new_operator))
@@ -321,7 +321,7 @@ void ModeHandler::operatorChannelDisableHandler()
 	try
 	{
 		argument = currentArguments();
-		User &new_operator = context.getUserByNickname(argument);
+		ClientUser &new_operator = context.getUserByNickname(argument);
 		if (!targetChannel->checkChannelOperatorByUser(new_operator))
 		{
 			return;

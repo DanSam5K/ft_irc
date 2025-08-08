@@ -1,7 +1,7 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-#include "User.hpp"
+#include "ClientUser.hpp"
 #include "ft_irc.hpp"
 #include "PasswordManager.hpp"
 #include <set>
@@ -11,11 +11,11 @@
 class Channel
 {
 	private:
-		typedef std::pair<std::string, User *> userNicknamePair;
+		typedef std::pair<std::string, ClientUser *> userNicknamePair;
 		// typedef std::pair<std::string, std::string> pair_nick_mode;
 
 		std::string channelName;
-		std::map<std::string, User *> usersRegistry;
+		std::map<std::string, ClientUser *> usersRegistry;
 
 		std::string modeFlags;
 		std::string creatorNickname;
@@ -38,7 +38,7 @@ class Channel
 	public:
 		// Constructors &Destructor
 		Channel(std::string channelName, PasswordManager &passwordHandler);
-		Channel(std::string channelName, User &creator, PasswordManager &passwordHandler);
+		Channel(std::string channelName, ClientUser &creator, PasswordManager &passwordHandler);
 		virtual ~Channel();
 
 		// Accessors
@@ -49,7 +49,7 @@ class Channel
 		std::string getModeString() const;
 		std::string getUserListString();
 		unsigned int getUserCount();
-		std::list<User *> getUserList();
+		std::list<ClientUser *> getUserList();
 		
 		// Modifiers
 		void setChannelName(std::string channelName);
@@ -65,9 +65,9 @@ class Channel
 		void removeUserRestriction();
 		void setPassword(std::string password);
 		void removePassword();
-		void addUserToChannel(User &user);
-		void removeUserFromChannel(User &user);
-		void updateUserNickname(User &user, std::string newNickname);
+		void addUserToChannel(ClientUser &user);
+		void removeUserFromChannel(ClientUser &user);
+		void updateUserNickname(ClientUser &user, std::string newNickname);
 
 
 		// Invites
@@ -77,8 +77,8 @@ class Channel
 
 		
 		// Operator Controls
-		void demoteOperatorByUser(User &user);
-		void promoteOperatorByUser(User &user);
+		void demoteOperatorByUser(ClientUser &user);
+		void promoteOperatorByUser(ClientUser &user);
 		void promoteOperatorByNickname(std::string nickname);
 		void demoteOperatorByNickname(std::string nickname);
 
@@ -90,20 +90,20 @@ class Channel
 		bool checkUserRestriction() const;
 		bool checkRestrictionPoint() const;
 
-		bool checkInvitedByUser(User &user) const;
+		bool checkInvitedByUser(ClientUser &user) const;
 		bool checkInvitedByNickname(std::string nickname) const;
 
 		bool confirmModePresence(char c);
-		bool checkChannelOperatorByUser(User &user);
-		bool checkChannelCreatorByUser(User &user);
+		bool checkChannelOperatorByUser(ClientUser &user);
+		bool checkChannelCreatorByUser(ClientUser &user);
 		bool checkChannelOperatorByNickname(std::string nickname);
 		bool checkChannelCreatorByNickname(std::string nickname);
-		bool confirmInChannelByUser(User &user);
+		bool confirmInChannelByUser(ClientUser &user);
 		bool confirmInChannelByNickname(std::string nickname);
 		bool confirmChannelIsEmpty();
 
 		void broadcast(std::string message);
-		void broadcastExcept(std::string message, User &excludedUser);
+		void broadcastExcept(std::string message, ClientUser &excludedUser);
 
 
 		class AlreadyInChannelException: public std::exception
