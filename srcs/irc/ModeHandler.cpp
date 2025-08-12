@@ -5,7 +5,7 @@
 #include "Channel.hpp"
 #include "ModeParser.hpp"
 #include "RequestParser.hpp"
-#include "reply.hpp"
+#include "reply_message.hpp"
 #include <cctype>
 #include <cstdlib>
 #include <exception>
@@ -44,13 +44,13 @@ ModeHandler::ModeHandler(ConnectionManager &context, ClientUser &sender,
 	extractArguments();
 	if (!targetChannel->confirmInChannelByUser(sender))
 	{
-		sender.userBroadcast(rpl::err_notonchannel(sender,
+		sender.userBroadcast(rpl_msg::errNotOnChannel(sender,
 		                   modeTarget));
 		return;
 	}
 	if (!targetChannel->checkChannelOperatorByUser(sender))
 	{
-		sender.userBroadcast(rpl::err_chanoprivsneeded(sender,
+		sender.userBroadcast(rpl_msg::errChanOprivsNeeded(sender,
 		                   modeTarget));
 		return;
 	}
@@ -79,7 +79,7 @@ bool ModeHandler::determineTargetType()
 		targetType = TARGET_CHANNEL;
 		if (!context.checkChannelExist(modeTarget))
 		{
-			sender.userBroadcast(rpl::err_nosuchchannel(sender, modeTarget));
+			sender.userBroadcast(rpl_msg::errNoSuchChannel(sender, modeTarget));
 			return 1;
 		}
 		targetChannel = &context.getChannel(modeTarget);
@@ -90,7 +90,7 @@ bool ModeHandler::determineTargetType()
 	}
 	else
 	{
-		sender.userBroadcast(rpl::err_nosuchchannel(sender, modeTarget));
+		sender.userBroadcast(rpl_msg::errNoSuchChannel(sender, modeTarget));
 		return 1;
 	}
 	return 0;
@@ -127,7 +127,7 @@ std::string ModeHandler::santizeModeString(std::string rawModeString)
 	{
 		if (containsInvalidModeChar(*it))
 		{
-			sender.userBroadcast(rpl::err_unknownmode(sender, modeTarget, *it));
+			sender.userBroadcast(rpl_msg::errUnknownMode(sender, modeTarget, *it));
 		}
 		else
 		{
@@ -146,10 +146,10 @@ bool ModeHandler::parseModeString()
 	{
 		if (targetType == TARGET_USER)
 		{
-			sender.userBroadcast(rpl::umodeis(message, *targetUser));
+			sender.userBroadcast(rpl_msg::umodeIs(message, *targetUser));
 			return 1;
 		}
-		sender.userBroadcast(rpl::channelmodeis(message, *targetChannel));
+		sender.userBroadcast(rpl_msg::channelModeIs(message, *targetChannel));
 		return 1;
 	}
 	ModeParser parser(message.getCommandArgument("rawModeString"));
@@ -161,7 +161,7 @@ bool ModeHandler::parseModeString()
 	}
 	catch (ModeParser::InvalidModestringException &e)
 	{
-		sender.userBroadcast(rpl::err_invalidmodestring());
+		sender.userBroadcast(rpl_msg::errInvalidModeString());
 		return 1;
 	}
 	return 0;
@@ -208,7 +208,7 @@ void ModeHandler::inviteChannelEnableHandler()
 	{
 		targetChannel->setInviteOnly(true);
 		targetChannel->clearInvites();
-		targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "+i"));
 	}
 	return;
@@ -219,7 +219,7 @@ void ModeHandler::inviteChannelDisableHandler()
 	if (targetChannel->checkInviteToChannelOnly())
 	{
 		targetChannel->setInviteOnly(false);
-		targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "-i"));
 	}
 	return;
@@ -230,7 +230,7 @@ void ModeHandler::topicChannelEnableHandler()
 	if (!targetChannel->checkTopicRestricted())
 	{
 		targetChannel->setTopicLock(true);
-		targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "+t"));
 	}
 	return;
@@ -241,7 +241,7 @@ void ModeHandler::topicChannelDisableHandler()
 	if (targetChannel->checkTopicRestricted())
 	{
 		targetChannel->setTopicLock(false);
-		targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "-t"));
 	}
 	return;
@@ -261,13 +261,13 @@ void ModeHandler::keyChannelEnableHandler()
 	}
 	catch (std::out_of_range &e)
 	{
-		sender.userBroadcast(rpl::invalidmodeparam(sender, targetChannel->getChannelName(),
+		sender.userBroadcast(rpl_msg::invalidModeParam(sender, targetChannel->getChannelName(),
 		                   'k',
 		                   "Invalid channel key")) ;
 		return;
 	}
 	targetChannel->setPassword(argument);
-	targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+	targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 	                            "+k " + argument));
 	return;
 }
@@ -277,7 +277,7 @@ void ModeHandler::keyChannelDisableHandler()
 	if (targetChannel->checkPasswordProtection())
 	{
 		targetChannel->removePassword();
-		targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "-k"));
 	}
 	return;
@@ -293,7 +293,7 @@ void ModeHandler::operatorChannelEnableHandler()
 		                          argument); // TODO: maybe specific response if exists
 		if (!targetChannel->confirmInChannelByUser(new_operator))
 		{
-			sender.userBroadcast(rpl::err_usernotinchannel(sender,
+			sender.userBroadcast(rpl_msg::errUserNotInChannel(sender,
 			                   new_operator.getNickname(), targetChannel->getChannelName()));
 			return;
 		}
@@ -302,7 +302,7 @@ void ModeHandler::operatorChannelEnableHandler()
 			return;
 		}
 		targetChannel->promoteOperatorByUser(new_operator);
-		targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "+o " + argument));
 	}
 	catch (std::out_of_range &e)
@@ -327,7 +327,7 @@ void ModeHandler::operatorChannelDisableHandler()
 			return;
 		}
 		targetChannel->demoteOperatorByUser(new_operator);
-		targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "-o " + argument));
 	}
 	catch (std::out_of_range &e)
@@ -364,7 +364,7 @@ void ModeHandler::limitChannelUserEnableHandler()
 				return;
 			}
 			targetChannel->setUserLimit(limit);
-			targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+			targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 			                            "+l " + argument));
 		}
 	}
@@ -380,7 +380,7 @@ void ModeHandler::limitChannelUserDisableHandler()
 	if (targetChannel->checkUserRestriction())
 	{
 		targetChannel->removeUserRestriction();
-		targetChannel->broadcast(rpl::mode_channel(sender, *targetChannel,
+		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "-l"));
 	}
 	return;

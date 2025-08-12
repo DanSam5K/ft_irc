@@ -99,7 +99,7 @@ bool is_in_list(std::list<T> list, T elem)
 }
 
 bool confirmChannel(std::string name);
-std::string string_to_lowercase(std::string string);
+std::string stringToLowercase(std::string string);
 
 template <typename T, typename U>
 void delete_map(std::map<T, U> &map)
