@@ -6,7 +6,7 @@
 #include "RequestParser.hpp"
 #include "PasswordManager.hpp"
 #include "utils_logger.hpp"
-#include "reply.hpp"
+#include "reply_message.hpp"
 #include <cctype>
 #include <exception>
 #include <list>
@@ -35,7 +35,7 @@ void MessageHandler::processClientCommand(ClientUser &sender, const std::string 
 		}
 		else
 		{
-			sender.userBroadcast(rpl::err_notregistered(sender));
+			sender.userBroadcast(rpl_msg::errNotRegistered(sender));
 		}
 		delete (message);
 	}
@@ -61,7 +61,7 @@ CommandMessage *MessageHandler::buildCommandMessage(ClientUser &sender,
 	}
 	catch (RequestParser::InvalidCommandException &e)
 	{
-		sender.userBroadcast(rpl::err_unknowncommand(sender, ""));
+		sender.userBroadcast(rpl_msg::errUnknownCommand(sender, ""));
 		throw std::runtime_error(e.what());
 	}
 	catch (std::exception &e)
@@ -79,17 +79,17 @@ void MessageHandler::checkMessageValidity(ClientUser &sender, CommandMessage &me
 	}
 	catch (RequestParser::TooManyArgumentsException &e)
 	{
-		sender.userBroadcast(rpl::err_toomanyparams(sender, message.getCommandMessage()));
+		sender.userBroadcast(rpl_msg::errTooManyParams(sender, message.getCommandMessage()));
 		throw std::runtime_error(e.what());
 	}
 	catch (RequestParser::MissingArgumentsException &e)
 	{
-		sender.userBroadcast(rpl::err_needmoreparams(sender, message.getCommandMessage()));
+		sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, message.getCommandMessage()));
 		throw std::runtime_error(e.what());
 	}
 	catch (RequestParser::InvalidCommandException &e)
 	{
-		sender.userBroadcast(rpl::err_unknowncommand(sender, message.getCommandMessage()));
+		sender.userBroadcast(rpl_msg::errUnknownCommand(sender, message.getCommandMessage()));
 		throw std::runtime_error(e.what());
 	}
 	catch (std::exception &e)
@@ -149,93 +149,93 @@ void MessageHandler::adminCommandHandler(CommandMessage &message)
 	ClientUser &sender = message.getMessageSender();
 	if (message.checkCommandArgument("modeTarget") && message.getCommandArgument("modeTarget") != SERVER_NAME)
 	{
-		sender.userBroadcast(rpl::err_nosuchserver(sender, message.getCommandArgument("modeTarget")));
+		sender.userBroadcast(rpl_msg::errNoSuchServer(sender, message.getCommandArgument("modeTarget")));
 		return ;
 	}
-	sender.userBroadcast(rpl::adminme(sender));
-	sender.userBroadcast(rpl::adminloc1(sender));
-	sender.userBroadcast(rpl::adminloc2(sender));
-	sender.userBroadcast(rpl::adminemail(sender));
+	sender.userBroadcast(rpl_msg::adminMe(sender));
+	sender.userBroadcast(rpl_msg::adminLoc1(sender));
+	sender.userBroadcast(rpl_msg::adminLoc2(sender));
+	sender.userBroadcast(rpl_msg::adminEmail(sender));
 }
 
 void MessageHandler::inviteCommandHandler(CommandMessage &message)
 {
 	// TODO: no problem if no such channel
 	ClientUser &sender = message.getMessageSender();
-	std::string channel_name = message.getCommandArgument("channel");
+	std::string channelName = message.getCommandArgument("channel");
 	std::string user_nickname = message.getCommandArgument("nickname");
 
 	if (!context.checkUserNicknameExist(user_nickname))
 	{
-		sender.userBroadcast(rpl::err_nosuchnick(sender, user_nickname));
+		sender.userBroadcast(rpl_msg::errNoSuchNick(sender, user_nickname));
 		return;
 	}
 	ClientUser &user = context.getUserByNickname(user_nickname);
-	if (!context.checkChannelExist(channel_name))
+	if (!context.checkChannelExist(channelName))
 	{
-		sender.userBroadcast(rpl::inviting(user, message));
-		user.userBroadcast(rpl::invite(sender, message));
+		sender.userBroadcast(rpl_msg::inviting(user, message));
+		user.userBroadcast(rpl_msg::invite(sender, message));
 		return;
 	}
-	Channel &channel = context.getChannel(channel_name);
+	Channel &channel = context.getChannel(channelName);
 	if (!channel.confirmInChannelByUser(sender))
 	{
-		sender.userBroadcast(rpl::err_notonchannel(sender, channel.getChannelName()));
+		sender.userBroadcast(rpl_msg::errNotOnChannel(sender, channel.getChannelName()));
 		return;
 	}
 	if (channel.checkInviteToChannelOnly() && !channel.checkChannelOperatorByUser(sender))
 	{
-		sender.userBroadcast(rpl::err_chanoprivsneeded(sender, channel_name));
+		sender.userBroadcast(rpl_msg::errChanOprivsNeeded(sender, channelName));
 		return;
 	}
 	if (channel.confirmInChannelByNickname(user_nickname))
 	{
-		sender.userBroadcast(rpl::err_useronchannel(sender, user_nickname,
+		sender.userBroadcast(rpl_msg::errUserOnChannel(sender, user_nickname,
 		                   channel.getChannelName()));
 		return;
 	}
-	sender.userBroadcast(rpl::inviting(user, message));
-	user.userBroadcast(rpl::invite(sender, message));
+	sender.userBroadcast(rpl_msg::inviting(user, message));
+	user.userBroadcast(rpl_msg::invite(sender, message));
 	channel.inviteUser(user_nickname);
 }
 
 void MessageHandler::topicCommandHandler(CommandMessage &message)
 {
 	ClientUser &sender = message.getMessageSender();
-	std::string channel_name = message.getCommandArgument("channel");
+	std::string channelName = message.getCommandArgument("channel");
 
-	if (!context.checkChannelExist(channel_name))
+	if (!context.checkChannelExist(channelName))
 	{
-		sender.userBroadcast(rpl::err_notonchannel(sender, channel_name));
+		sender.userBroadcast(rpl_msg::errNotOnChannel(sender, channelName));
 		return;
 	}
-	Channel &channel = context.getChannel(channel_name);
+	Channel &channel = context.getChannel(channelName);
 	if (!channel.confirmInChannelByUser(sender))
 	{
-		sender.userBroadcast(rpl::err_notonchannel(sender, channel.getChannelName()));
+		sender.userBroadcast(rpl_msg::errNotOnChannel(sender, channel.getChannelName()));
 		return;
 	}
 	if (!message.checkCommandArgument("topic"))
 	{
 		if (channel.getTopicMessage() == "")
 		{
-			sender.userBroadcast(rpl::notopic(message, channel));
+			sender.userBroadcast(rpl_msg::noTopic(message, channel));
 			return;
 		}
 		else
 		{
-			sender.userBroadcast(rpl::topic(message, channel));
+			sender.userBroadcast(rpl_msg::topic(message, channel));
 			return;
 		}
 	}
 	std::string new_topic = message.getCommandArgument("topic");
 	if (channel.checkTopicRestricted() && !channel.checkChannelOperatorByUser(sender))
 	{
-		sender.userBroadcast(rpl::err_chanoprivsneeded(sender, channel.getChannelName()));
+		sender.userBroadcast(rpl_msg::errChanOprivsNeeded(sender, channel.getChannelName()));
 		return;
 	}
 	channel.setTopicMessage(new_topic);
-	channel.broadcast(rpl::newtopic(sender, message));
+	channel.broadcast(rpl_msg::newTopic(sender, message));
 }
 
 void MessageHandler::capRequestHandler(CommandMessage &message)
@@ -249,13 +249,13 @@ void MessageHandler::infoCommandHandler(CommandMessage &message)
 	ClientUser &sender = message.getMessageSender();
 	if (message.checkCommandArgument("modeTarget") && message.getCommandArgument("modeTarget") != SERVER_NAME)
 	{
-		sender.userBroadcast(rpl::err_nosuchserver(sender, message.getCommandArgument("modeTarget")));
+		sender.userBroadcast(rpl_msg::errNoSuchServer(sender, message.getCommandArgument("modeTarget")));
 		return ;
 	}
-	sender.userBroadcast(rpl::info(sender, 0));
-	sender.userBroadcast(rpl::info(sender, 1));
-	sender.userBroadcast(rpl::info(sender, 2));
-	sender.userBroadcast(rpl::info_end(sender));
+	sender.userBroadcast(rpl_msg::info(sender, 0));
+	sender.userBroadcast(rpl_msg::info(sender, 1));
+	sender.userBroadcast(rpl_msg::info(sender, 2));
+	sender.userBroadcast(rpl_msg::infoEnd(sender));
 }
 
 void MessageHandler::joinCommandHandler(CommandMessage &message)
@@ -274,7 +274,7 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 		{
 			if ((*it)->getChannelName() != FALLBACK_CHANNEL)
 			{
-				context.processClientCommand(sender, rpl::create_part_message(*(*it)));
+				context.processClientCommand(sender, rpl_msg::createPartMessage(*(*it)));
 			}
 		}
 		return ;
@@ -298,34 +298,34 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 			{
 				context.joinUserToChannel(sender, *chans);
 				Channel &channel = context.getChannel(*chans);
-				channel.broadcast(rpl::join_channel(sender, channel));
-				sender.userBroadcast(rpl::namreply(sender, channel));
-				sender.userBroadcast(rpl::endofnames(sender, channel.getChannelName()));
+				channel.broadcast(rpl_msg::joinChannel(sender, channel));
+				sender.userBroadcast(rpl_msg::nameReply(sender, channel));
+				sender.userBroadcast(rpl_msg::endOfNames(sender, channel.getChannelName()));
 			}
 			else
 			{
 				Channel &channel = context.getChannel(*chans);
 				if (channel.checkInviteToChannelOnly() && !channel.checkInvitedByUser(sender))
 				{
-					sender.userBroadcast(rpl::err_inviteonlychan(sender, channel.getChannelName()));
+					sender.userBroadcast(rpl_msg::errInviteOnlyChannel(sender, channel.getChannelName()));
 				}
 				else if (channel.checkPasswordProtection()
 				          && !channel.checkPassword(*passes))
 				{
-					sender.userBroadcast(rpl::err_badchannelkey(sender, channel.getChannelName()));
+					sender.userBroadcast(rpl_msg::errBadChannelKey(sender, channel.getChannelName()));
 				}
 				else if (channel.checkRestrictionPoint())
 				{
-					sender.userBroadcast(rpl::err_channelisfull(sender, channel.getChannelName()));
+					sender.userBroadcast(rpl_msg::errChanneListFull(sender, channel.getChannelName()));
 				}
 				else
 				{
 					context.joinUserToChannel(sender, *chans);
 					channel.revokeInvite(sender.getNickname());
-					channel.broadcast(rpl::join_channel(sender, channel));
-					sender.userBroadcast(rpl::topic(message, channel));
-					sender.userBroadcast(rpl::namreply(sender, channel));
-					sender.userBroadcast(rpl::endofnames(sender, channel.getChannelName()));
+					channel.broadcast(rpl_msg::joinChannel(sender, channel));
+					sender.userBroadcast(rpl_msg::topic(message, channel));
+					sender.userBroadcast(rpl_msg::nameReply(sender, channel));
+					sender.userBroadcast(rpl_msg::endOfNames(sender, channel.getChannelName()));
 				}
 			}
 		}
@@ -336,7 +336,7 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 		catch (std::exception &e)
 		{
 			logActionUtils::warn("CommandMessage Handler: JOIN: ", e.what());
-			sender.userBroadcast(rpl::err_nosuchchannel(sender, *chans));
+			sender.userBroadcast(rpl_msg::errNoSuchChannel(sender, *chans));
 		}
 	}
 }
@@ -349,27 +349,27 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 	if (channels.size() > 1 && channels.size() != users.size())
 	{
 		// TODO: maybe message.getCommandMessage() not correct here
-		sender.userBroadcast(rpl::err_needmoreparams(sender, message.getCommandMessage()));
+		sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, message.getCommandMessage()));
 		return;
 	}
 
 	if (channels.size() == 1)
 	{
-		std::string channel_name = channels.front();
-		if (!context.checkChannelExist(channel_name))
+		std::string channelName = channels.front();
+		if (!context.checkChannelExist(channelName))
 		{
-			sender.userBroadcast(rpl::err_nosuchchannel(sender, channel_name));
+			sender.userBroadcast(rpl_msg::errNoSuchChannel(sender, channelName));
 			return;
 		}
-		Channel &channel = context.getChannel(channel_name);
+		Channel &channel = context.getChannel(channelName);
 		if (!channel.confirmInChannelByUser(sender))
 		{
-			sender.userBroadcast(rpl::err_notonchannel(sender, channel.getChannelName()));
+			sender.userBroadcast(rpl_msg::errNotOnChannel(sender, channel.getChannelName()));
 			return;
 		}
 		if (!channel.checkChannelOperatorByUser(sender))
 		{
-			sender.userBroadcast(rpl::err_chanoprivsneeded(sender, channel_name));
+			sender.userBroadcast(rpl_msg::errChanOprivsNeeded(sender, channelName));
 			return;
 		}
 		std::list<std::string>::iterator it = users.begin();
@@ -377,7 +377,7 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 		{
 			if (!context.checkUserNicknameExist(*it))
 			{
-				sender.userBroadcast(rpl::err_usernotinchannel(sender, *it,
+				sender.userBroadcast(rpl_msg::errUserNotInChannel(sender, *it,
 				                   channel.getChannelName()));
 				return;
 			}
@@ -385,17 +385,17 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 			if (!channel.confirmInChannelByUser(user))
 			{
 
-				sender.userBroadcast(rpl::err_usernotinchannel(sender, *it,
+				sender.userBroadcast(rpl_msg::errUserNotInChannel(sender, *it,
 				                   channel.getChannelName()));
 				return;
 			}
 			if (message.getCommandArgument("comment") == "")
 			{
-				channel.broadcast(rpl::kick(sender, user, channel, sender.getNickname()));
+				channel.broadcast(rpl_msg::kick(sender, user, channel, sender.getNickname()));
 			}
 			else
 			{
-				channel.broadcast(rpl::kick(sender, user, channel,
+				channel.broadcast(rpl_msg::kick(sender, user, channel,
 				                               message.getCommandArgument("comment")));
 			}
 			context.removeUserFromChannel(user, channel.getChannelName());
@@ -407,27 +407,27 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 		std::list<std::string>::iterator cit = channels.begin();
 		for (; uit != users.end(); uit++, cit++)
 		{
-			std::string channel_name = *cit;
+			std::string channelName = *cit;
 			std::string user_name = *uit;
-			if (!context.checkChannelExist(channel_name))
+			if (!context.checkChannelExist(channelName))
 			{
-				sender.userBroadcast(rpl::err_nosuchchannel(sender, channel_name));
+				sender.userBroadcast(rpl_msg::errNoSuchChannel(sender, channelName));
 				return;
 			}
-			Channel &channel = context.getChannel(channel_name);
+			Channel &channel = context.getChannel(channelName);
 			if (!channel.confirmInChannelByUser(sender))
 			{
-				sender.userBroadcast(rpl::err_notonchannel(sender, channel.getChannelName()));
+				sender.userBroadcast(rpl_msg::errNotOnChannel(sender, channel.getChannelName()));
 				return;
 			}
 			if (!channel.checkChannelOperatorByUser(sender))
 			{
-				sender.userBroadcast(rpl::err_chanoprivsneeded(sender, channel_name));
+				sender.userBroadcast(rpl_msg::errChanOprivsNeeded(sender, channelName));
 				return;
 			}
 			if (!context.checkUserNicknameExist(user_name))
 			{
-				sender.userBroadcast(rpl::err_usernotinchannel(sender, user_name,
+				sender.userBroadcast(rpl_msg::errUserNotInChannel(sender, user_name,
 				                   channel.getChannelName()));
 				return;
 			}
@@ -435,17 +435,17 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 			if (!channel.confirmInChannelByUser(user))
 			{
 
-				sender.userBroadcast(rpl::err_usernotinchannel(sender, user_name,
+				sender.userBroadcast(rpl_msg::errUserNotInChannel(sender, user_name,
 				                   channel.getChannelName()));
 				return;
 			}
 			if (message.getCommandArgument("comment") == "")
 			{
-				channel.broadcast(rpl::kick(sender, user, channel, sender.getNickname()));
+				channel.broadcast(rpl_msg::kick(sender, user, channel, sender.getNickname()));
 			}
 			else
 			{
-				channel.broadcast(rpl::kick(sender, user, channel,
+				channel.broadcast(rpl_msg::kick(sender, user, channel,
 				                               message.getCommandArgument("comment")));
 			}
 			context.removeUserFromChannel(user, channel.getChannelName());
@@ -459,14 +459,14 @@ void MessageHandler::listCommandHandler(CommandMessage &message)
 	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> channels;
 
-	sender.userBroadcast(rpl::liststart(sender));
+	sender.userBroadcast(rpl_msg::listStart(sender));
 	if (message.checkCommandArgumentList("channel"))
 	{
 		channels = message.getCommandArgumentList("channel");
 		std::list<std::string>::iterator it = channels.begin();
 		for (; it != channels.end(); it++)
 		{
-			sender.userBroadcast(rpl::list(sender, context.getChannel(*it)));
+			sender.userBroadcast(rpl_msg::list(sender, context.getChannel(*it)));
 		}
 	}
 	else
@@ -475,10 +475,10 @@ void MessageHandler::listCommandHandler(CommandMessage &message)
 		std::list<std::string>::iterator it = channels.begin();
 		for (; it != channels.end(); it++)
 		{
-			sender.userBroadcast(rpl::list(sender, context.getChannel(*it)));
+			sender.userBroadcast(rpl_msg::list(sender, context.getChannel(*it)));
 		}
 	}
-	sender.userBroadcast(rpl::listend(sender));
+	sender.userBroadcast(rpl_msg::listEnd(sender));
 }
 
 void MessageHandler::modeCommandHandler(CommandMessage &message)
@@ -511,7 +511,7 @@ void MessageHandler::namesCommandHandler(CommandMessage &message)
 		try
 		{
 			Channel &channel = context.getChannel(*it);
-			sender.userBroadcast(rpl::namreply(sender, channel));
+			sender.userBroadcast(rpl_msg::nameReply(sender, channel));
 		}
 		catch(std::exception &e)
 		{
@@ -519,7 +519,7 @@ void MessageHandler::namesCommandHandler(CommandMessage &message)
 		}
 		if (show_default_chan == false && it == last)
 		{
-			sender.userBroadcast(rpl::endofnames(sender, *it));
+			sender.userBroadcast(rpl_msg::endOfNames(sender, *it));
 		}
 	}
 	if (show_default_chan == true)
@@ -527,9 +527,9 @@ void MessageHandler::namesCommandHandler(CommandMessage &message)
 		Channel &channel = context.getDefaultChannel();
 		if (channel.confirmChannelIsEmpty() == false)
 		{
-			sender.userBroadcast(rpl::namreply(sender, channel));
+			sender.userBroadcast(rpl_msg::nameReply(sender, channel));
 		}
-		sender.userBroadcast(rpl::endofnames(sender, channel.getChannelName()));
+		sender.userBroadcast(rpl_msg::endOfNames(sender, channel.getChannelName()));
 	}
 }
 
@@ -539,7 +539,7 @@ void MessageHandler::nickChangeHandler(CommandMessage &message)
 	std::string nickname = message.getCommandArgument("nickname");
 	if (context.checkUserNicknameExist(nickname) == true)
 	{
-		sender.userBroadcast(rpl::err_nicknameinuse(sender, nickname));
+		sender.userBroadcast(rpl_msg::errNicknameInUse(sender, nickname));
 		return ;
 	}
 	try
@@ -549,7 +549,7 @@ void MessageHandler::nickChangeHandler(CommandMessage &message)
 		sender.setNickname(nickname);
 		if (user_is_already_registered)
 		{
-			sender.userBroadcast(rpl::confirmation(old_id, message));
+			sender.userBroadcast(rpl_msg::confirmation(old_id, message));
 		}
 		else
 		{
@@ -558,11 +558,11 @@ void MessageHandler::nickChangeHandler(CommandMessage &message)
 	}
 	catch (ClientUser::InvalidNicknameException &e)
 	{
-		sender.userBroadcast(rpl::err_erroneusnickname(sender, nickname));
+		sender.userBroadcast(rpl_msg::errErroneousNickname(sender, nickname));
 	}
 	catch (ClientUser::NicknameTooLongException &e)
 	{
-		sender.userBroadcast(rpl::err_nicknametoolong(sender, nickname));
+		sender.userBroadcast(rpl_msg::errNicknameTooLong(sender, nickname));
 	}
 }
 
@@ -583,12 +583,12 @@ void MessageHandler::partCommandHandler(CommandMessage &message)
 			Channel &channel = context.getChannel(*it);
 			if (channel.confirmInChannelByUser(sender) == false)
 			{
-				sender.userBroadcast(rpl::err_notonchannel(sender, channel.getChannelName()));
+				sender.userBroadcast(rpl_msg::errNotOnChannel(sender, channel.getChannelName()));
 				continue ;
 			}
 			context.removeUserFromChannel(sender, *it);
-			channel.broadcast(rpl::part(sender, channel, message));
-			sender.userBroadcast(rpl::part(sender, channel, message));
+			channel.broadcast(rpl_msg::part(sender, channel, message));
+			sender.userBroadcast(rpl_msg::part(sender, channel, message));
 			if (channel.confirmChannelIsEmpty() && channel.getChannelName() != FALLBACK_CHANNEL)
 			{
 				context.deleteChannel(channel);
@@ -596,7 +596,7 @@ void MessageHandler::partCommandHandler(CommandMessage &message)
 		}
 		catch(std::exception &e)
 		{
-			sender.userBroadcast(rpl::err_nosuchchannel(sender, *it));
+			sender.userBroadcast(rpl_msg::errNoSuchChannel(sender, *it));
 		}
 	}
 }
@@ -607,12 +607,12 @@ void MessageHandler::passCommandHandler(CommandMessage &message)
 
 	if (sender.confirmFullyRegistered())
 	{
-		sender.userBroadcast(rpl::err_alreadyregistred(sender));
+		sender.userBroadcast(rpl_msg::errAlreadyRegistered(sender));
 		return ;
 	}
 	if (!message.checkCommandArgument("password"))
 	{
-		sender.userBroadcast(rpl::err_passwdmismatch(sender));
+		sender.userBroadcast(rpl_msg::errPasswdMismatch(sender));
 		return;
 	}
 	try
@@ -623,7 +623,7 @@ void MessageHandler::passCommandHandler(CommandMessage &message)
 	catch (PasswordManager::InvalidPasswordException &e)
 	{
 		logActionUtils::warn("MessageHandler: PASS: ", e.what());
-		sender.userBroadcast(rpl::err_passwdmismatch(sender));
+		sender.userBroadcast(rpl_msg::errPasswdMismatch(sender));
 	}
 	catch (std::exception &e)
 	{
@@ -642,29 +642,29 @@ void MessageHandler::privateMessageHandler(CommandMessage &message)
 	}
 	else
 	{
-		sender.userBroadcast(rpl::err_notexttosend(sender));
+		sender.userBroadcast(rpl_msg::errNoTextToSend(sender));
 		return;
 	}
 	if (context.checkUserNicknameExist(toNickname) == true)
 	{
 		ClientUser &toUser = context.getUserByNickname(toNickname);
-		toUser.userBroadcast(rpl::forward(sender, message));
+		toUser.userBroadcast(rpl_msg::forward(sender, message));
 	}
 	else if (context.checkChannelExist(toNickname) == true)
 	{
 		Channel &toChannel = context.getChannel(toNickname);
 		if (toChannel.confirmInChannelByUser(sender))
 		{
-			toChannel.broadcastExcept(rpl::forward(sender, message), sender);
+			toChannel.broadcastExcept(rpl_msg::forward(sender, message), sender);
 		}
 		else
 		{
-			sender.userBroadcast(rpl::err_cannotsendtochan(sender, toChannel.getChannelName()));
+			sender.userBroadcast(rpl_msg::errCannotSendToChan(sender, toChannel.getChannelName()));
 		}
 	}
 	else
 	{
-		sender.userBroadcast(rpl::err_nosuchnick(sender, toNickname));
+		sender.userBroadcast(rpl_msg::errNoSuchNick(sender, toNickname));
 	}
 }
 
@@ -679,7 +679,7 @@ void MessageHandler::quitCommandHandler(CommandMessage &message)
 		for (; it != users_in_same_channels.end(); it++)
 		{
 
-			(*it)->userBroadcast(rpl::quit(sender, message));
+			(*it)->userBroadcast(rpl_msg::quit(sender, message));
 		}
 	}
 	context.forciblyDisconnect(sender);
@@ -688,7 +688,7 @@ void MessageHandler::quitCommandHandler(CommandMessage &message)
 void MessageHandler::summonCommandHandler(CommandMessage &message)
 {
 	ClientUser &sender = message.getMessageSender();
-	sender.userBroadcast(rpl::err_summondisabled(sender));
+	sender.userBroadcast(rpl_msg::errSummonDisabled(sender));
 }
 
 void MessageHandler::userCommandHandler(CommandMessage &message)
@@ -697,12 +697,12 @@ void MessageHandler::userCommandHandler(CommandMessage &message)
 	ClientUser &sender = message.getMessageSender();
 	if (sender.confirmFullyRegistered())
 	{
-		sender.userBroadcast(rpl::err_alreadyregistred(sender));
+		sender.userBroadcast(rpl_msg::errAlreadyRegistered(sender));
 		return ;
 	}
 	else if (sender.checkAllUserDetails())
 	{
-		sender.userBroadcast(rpl::err_notregistered(sender));
+		sender.userBroadcast(rpl_msg::errNotRegistered(sender));
 		return;
 	}
 	try
@@ -714,7 +714,7 @@ void MessageHandler::userCommandHandler(CommandMessage &message)
 	}
 	catch (ClientUser::InvalidUsernameException &e)
 	{
-		sender.userBroadcast(rpl::err_invalidusername());
+		sender.userBroadcast(rpl_msg::errInvalidUsername());
 	}
 	catch (std::exception &e)
 	{
@@ -725,13 +725,13 @@ void MessageHandler::userCommandHandler(CommandMessage &message)
 void MessageHandler::usersCommandHandler(CommandMessage &message)
 {
 	ClientUser &sender = message.getMessageSender();
-	sender.userBroadcast(rpl::err_usersdisabled(sender));
+	sender.userBroadcast(rpl_msg::errUsersDisabled(sender));
 }
 
 void MessageHandler::versionRequestHandler(CommandMessage &message)
 {
 	ClientUser &sender = message.getMessageSender();
-	sender.userBroadcast(rpl::server_version(sender));
+	sender.userBroadcast(rpl_msg::serverVersion(sender));
 }
 
 void MessageHandler::greetNewUser(ClientUser &user)
@@ -743,10 +743,10 @@ void MessageHandler::greetNewUser(ClientUser &user)
 	try
 	{
 		context.promoteUserToActive(user);
-		user.userBroadcast(rpl::welcome(user));
-		user.userBroadcast(rpl::yourhost(user));
-		user.userBroadcast(rpl::created(user));
-		user.userBroadcast(rpl::myinfo(user));
+		user.userBroadcast(rpl_msg::welcome(user));
+		user.userBroadcast(rpl_msg::yourHost(user));
+		user.userBroadcast(rpl_msg::created(user));
+		user.userBroadcast(rpl_msg::myInfo(user));
 	}
 	catch (std::exception &e)
 	{
@@ -760,10 +760,10 @@ void MessageHandler::pingCommandHandler(CommandMessage &message)
 
 	if (message.getCommandArgument("token") == "")
 	{
-		sender.userBroadcast(rpl::err_needmoreparams(sender, "PING"));
+		sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, "PING"));
 		return;
 	}
-	sender.userBroadcast(rpl::pong(sender, message));
+	sender.userBroadcast(rpl_msg::pong(sender, message));
 }
 
 void MessageHandler::pongCommandHandler(CommandMessage &message)

@@ -3,7 +3,7 @@
 
 # include "ft_irc.hpp"
 # include "CommandMessage.hpp"
-# include "reply.hpp"
+# include "reply_message.hpp"
 # include "ModeHandler.hpp"
 
 class ConnectionManager;
@@ -47,7 +47,7 @@ class MessageHandler
 		CommandMessage *buildCommandMessage(ClientUser &sender, std::string rawMessage);
 		void checkMessageValidity(ClientUser &sender, CommandMessage &message);
 		void greetNewUser(ClientUser &user);
-		bool checkIsValidUsername(std::string username);
+		// bool checkIsValidUsername(std::string username);
 
 	public:
 		MessageHandler(ConnectionManager &context);

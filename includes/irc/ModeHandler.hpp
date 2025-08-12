@@ -4,7 +4,7 @@
 #include "ModeParser.hpp"
 #include "CommandMessage.hpp"
 #include "ft_irc.hpp"
-#include "reply.hpp"
+#include "reply_message.hpp"
 
 // #include <map>
 // #include <string>
@@ -74,7 +74,7 @@ class ModeHandler
 		void limitChannelUserDisableHandler();
 
 		// Arguments management
-		void shiftArguments();
+		// void shiftArguments();
 		std::string currentArguments();
 		std::string santizeModeString(std::string rawModeString);
 

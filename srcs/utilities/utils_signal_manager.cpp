@@ -37,7 +37,7 @@ bool confirmChannel(std::string name)
 	return (false);
 }
 
-std::string string_to_lowercase(std::string string)
+std::string stringToLowercase(std::string string)
 {
 	std::string lowercase = string;
 	std::string::iterator it = lowercase.begin();

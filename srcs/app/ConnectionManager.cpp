@@ -91,31 +91,31 @@ void ConnectionManager::removePendingUser(ClientUser &user)
 void ConnectionManager::setupChannel(std::string name)
 {
 	Channel *newChannel = new Channel(name, _passHandler);
-	std::string channelName = string_to_lowercase(newChannel->getChannelName());
+	std::string channelName = stringToLowercase(newChannel->getChannelName());
 	_channels.insert(channelNamePair(channelName, newChannel));
 }
 
-void ConnectionManager::setupChannelForUser(ClientUser &user, const std::string &chanName)
+void ConnectionManager::setupChannelForUser(ClientUser &user, const std::string &channelName)
 {
-	Channel *newChannel = new Channel(chanName, user, _passHandler);
-	std::string channelName = string_to_lowercase(newChannel->getChannelName());
-	_channels.insert(channelNamePair(channelName, newChannel));
+	Channel *newChannel = new Channel(channelName, user, _passHandler);
+	std::string lowercaseChannelName = stringToLowercase(newChannel->getChannelName());
+	_channels.insert(channelNamePair(lowercaseChannelName, newChannel));
 	newChannel->promoteOperatorByUser(user);
 }
 
-void ConnectionManager::joinUserToChannel(ClientUser &user, const std::string &chanName)
+void ConnectionManager::joinUserToChannel(ClientUser &user, const std::string &channelName)
 {
-	if (checkChannelExist(chanName) == false)
+	if (checkChannelExist(channelName) == false)
 	{
-		setupChannelForUser(user, chanName);
+		setupChannelForUser(user, channelName);
 	}
 	else
 	{
-		std::string channelName = string_to_lowercase(chanName);
+		std::string channelName = stringToLowercase(channelName);
 		logActionUtils::info("ConnectionManager: Adding user \"" + user.getNickname() +
 		                 "\" to channel " + channelName);
 		_channels[channelName]->addUserToChannel(user);
-		if (chanName != FALLBACK_CHANNEL
+		if (channelName != FALLBACK_CHANNEL
 		        && _channels[FALLBACK_CHANNEL]->confirmInChannelByUser(user))
 		{
 			_channels[FALLBACK_CHANNEL]->removeUserFromChannel(user);
@@ -123,15 +123,15 @@ void ConnectionManager::joinUserToChannel(ClientUser &user, const std::string &c
 	}
 }
 
-void ConnectionManager::removeUserFromChannel(ClientUser &user, const std::string &chanName)
+void ConnectionManager::removeUserFromChannel(ClientUser &user, const std::string &channelName)
 {
-	if (checkChannelExist(chanName) == false)
+	if (checkChannelExist(channelName) == false)
 	{
 		throw std::out_of_range("ConnectionManager: Remove from channel: no such channel");
 	}
 	else
 	{
-		std::string channelName = string_to_lowercase(chanName);
+		std::string channelName = stringToLowercase(channelName);
 		logActionUtils::info("ConnectionManager: Removing user \"" + user.getNickname() +
 		                 "\" from channel " + channelName);
 		_channels[channelName]->removeUserFromChannel(user);
@@ -170,7 +170,7 @@ bool ConnectionManager::checkUserInAnyChannel(ClientUser &user)
 
 void ConnectionManager::deleteChannel(Channel &channel)
 {
-	std::string channelName = string_to_lowercase(channel.getChannelName());
+	std::string channelName = stringToLowercase(channel.getChannelName());
 	std::map<std::string, Channel *>::iterator it = _channels.find(channelName);
 	if (it != _channels.end())
 	{
@@ -251,7 +251,7 @@ Channel &ConnectionManager::getChannel(const std::string &name)
 		throw std::out_of_range("ConnectionManager: Could not find channel " + name +
 		                         " by name");
 	}
-	std::string channelName = string_to_lowercase(name);
+	std::string channelName = stringToLowercase(name);
 	std::map<std::string, Channel *>::iterator it = _channels.find(channelName);
 	if (it != _channels.end())
 	{
@@ -282,7 +282,7 @@ std::list<std::string> ConnectionManager::listAllChannelNames()
 
 bool ConnectionManager::checkChannelExist(const std::string &name)
 {
-	std::string channelName = string_to_lowercase(name);
+	std::string channelName = stringToLowercase(name);
 	std::map<std::string, Channel *>::iterator it = _channels.find(channelName);
 	if (it != _channels.end())
 	{

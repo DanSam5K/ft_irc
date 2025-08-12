@@ -5,7 +5,7 @@
 #include "ft_irc.hpp"
 #include "CommandMessage.hpp"
 #include "MessageHandler.hpp"
-#include "reply.hpp"
+#include "reply_message.hpp"
 #include "Application.hpp"
 
 # define FALLBACK_CHANNEL "*"
@@ -49,7 +49,7 @@ class ConnectionManager
 		void forciblyDisconnect(ClientUser &user);
 
 		// Channel Management
-		void setupChannelForUser(ClientUser &user, const std::string &chanName);
+		void setupChannelForUser(ClientUser &user, const std::string &channelName);
 		void deleteChannel(Channel &channel);
 		void updateUserNickname(ClientUser &user, const std::string &newNickname);
 
