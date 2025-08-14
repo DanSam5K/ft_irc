@@ -11,21 +11,21 @@ private:
 	std::string hashedConnectionPassword;
 
 	// Internal: Generate SHA-256 hash from plain text
-	std::string computeSHA256(const std::string &password);
+	std::string computeSHA256(std::string passwordText);
 
 public:
 	// Constructor that stores hashed version of connection password
-	PasswordManager(const std::string &connectionPassword);
+	PasswordManager(std::string connectionPassword);
 	virtual ~PasswordManager();
 
 	// Return SHA-256 hash of provided plain text
-	std::string generateHash(const std::string &plainText);
+	std::string generateHash(std::string plainText);
 
 	// Validate incoming connection password against stored one
-	void verifyConnectionPassword(const std::string &password);
+	void verifyConnectionPassword(std::string password);
 
 	// Generic password check: compare hash with plain password
-	void verifyPassword(const std::string &storedHash, const std::string &password);
+	void verifyPassword(std::string storedHash, std::string password);
 
 	// Exception thrown on invalid password attempts
 	class InvalidPasswordException : public std::exception {

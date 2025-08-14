@@ -99,6 +99,7 @@ bool is_in_list(std::list<T> list, T elem)
 }
 
 bool confirmChannel(std::string name);
+
 std::string stringToLowercase(std::string string);
 
 template <typename T, typename U>

@@ -1,8 +1,10 @@
 #include "InputTokenizer.hpp"
 
+// Constructor: initializes tokenizer with input and sets starting state
 InputTokenizer::InputTokenizer(std::string rawInput) : content(rawInput),
 	currentState(READING_PARAM), index(0) {}
 
+// Main tokenization loop: processes input string based on current state
 void InputTokenizer::tokenize()
 {
 	while (index <= content.size())
@@ -22,6 +24,7 @@ void InputTokenizer::tokenize()
 	}
 }
 
+// Handles parsing of regular parameters in the input
 void InputTokenizer::tokenizeParam()
 {
 	switch (peekChar())
@@ -46,6 +49,7 @@ void InputTokenizer::tokenizeParam()
 	}
 }
 
+// Handles whitespace between parameters
 void InputTokenizer::tokenizeSpace()
 {
 	switch (peekChar())
@@ -65,6 +69,7 @@ void InputTokenizer::tokenizeSpace()
 	}
 }
 
+// Handles extended (trailing) parameters, which may include spaces
 void InputTokenizer::tokenizeExtendedParam()
 {
 	switch (peekChar())
@@ -78,6 +83,31 @@ void InputTokenizer::tokenizeExtendedParam()
 	}
 }
 
+
+// Changes the parsing state to the specified value
+void InputTokenizer::change_state(ParseState new_state)
+{
+	currentState = new_state;
+}
+
+
+// Saves the current buffer as a token and clears it
+void InputTokenizer::storeToken()
+{
+	parsedTokens.push_back(tempBuffer);
+	tempBuffer.clear();
+}
+
+// Returns all tokens parsed from the input string
+std::vector<std::string> InputTokenizer::getAllTokens()
+{
+	return (parsedTokens);
+}
+
+// Destructor: cleans up tokenizer resources
+InputTokenizer::~InputTokenizer() {}
+
+// Returns the current character or '\0' if at the end of input
 char InputTokenizer::peekChar() const
 {
 	if (index < content.size())
@@ -87,31 +117,15 @@ char InputTokenizer::peekChar() const
 	return ('\0');
 }
 
+// Adds the current character to the buffer and advances the index
 void InputTokenizer::collectChar()
 {
 	tempBuffer.push_back(peekChar());
 	shiftArguments();
 }
 
+// Moves to the next character in the input string
 void InputTokenizer::shiftArguments()
 {
 	index++;
 }
-
-void InputTokenizer::change_state(ParseState new_state)
-{
-	currentState = new_state;
-}
-
-void InputTokenizer::storeToken()
-{
-	parsedTokens.push_back(tempBuffer);
-	tempBuffer.clear();
-}
-
-std::vector<std::string> InputTokenizer::getAllTokens()
-{
-	return (parsedTokens);
-}
-
-InputTokenizer::~InputTokenizer() {}

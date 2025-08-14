@@ -663,6 +663,18 @@ std::string const rpl_msg::errGeneric(std::string msg)
 	return (reply);
 }
 
+// // Reply when a username contains invalid characters
+// std::string const rpl_msg::errErroneousUsername(ClientUser &user, std::string username)
+// {
+//     std::string reply = SERVER_PREFIX " ";
+//     reply += ERR_ERRONEUSUSERNAME " ";
+//     reply += user.getNickname();
+//     reply += " ";
+//     reply += ;
+//     reply += " :Erroneous nickname\r\n";
+//     return (reply);
+// }
+
 
 
 

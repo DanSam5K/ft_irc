@@ -2,7 +2,7 @@
 #include "ft_irc.hpp"
 #include "utils_logger.hpp"
 
-PasswordManager::PasswordManager(const std::string &connectionPassword) {
+PasswordManager::PasswordManager(std::string connectionPassword) {
 	if (connectionPassword.empty())
 	{
 		logActionUtils::info("PasswordManager: No password provided, using default password");
@@ -14,7 +14,7 @@ PasswordManager::PasswordManager(const std::string &connectionPassword) {
 
 PasswordManager::~PasswordManager() {}
 
-std::string PasswordManager::computeSHA256(const std::string &password)
+std::string PasswordManager::computeSHA256(std::string password)
 {
 	unsigned char hash[SHA256_DIGEST_LENGTH];
 	unsigned const char *plainText = reinterpret_cast<unsigned const char *>(password.c_str());
@@ -29,17 +29,17 @@ std::string PasswordManager::computeSHA256(const std::string &password)
 	return (ss.str());
 }
 
-std::string PasswordManager::generateHash(const std::string &plainText)
+std::string PasswordManager::generateHash(std::string plainText)
 {
 	return (computeSHA256(plainText));
 }
 
-void PasswordManager::verifyConnectionPassword(const std::string &password)
+void PasswordManager::verifyConnectionPassword(std::string password)
 {
 	verifyPassword(hashedConnectionPassword, password);
 }
 
-void PasswordManager::verifyPassword(const std::string &hash, const std::string &plainText)
+void PasswordManager::verifyPassword(std::string hash, std::string plainText)
 {
 	std::string password_hash = computeSHA256(plainText);
 
