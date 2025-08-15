@@ -1,0 +1,5 @@
+PASS testpass
+NICK testuser
+USER testuser 0 * :Test User
+JOIN #test
+PRIVMSG #test :Hello everyone!
