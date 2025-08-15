@@ -65,6 +65,7 @@ namespace rpl_msg
     std::string const errFileError(ClientUser &user, std::string file_operation, std::string filename);
     std::string const errNoNicknameGiven(ClientUser &user);
     std::string const errErroneousNickname(ClientUser &user, std::string nickname);
+    // std::string const errErroneousUsername(ClientUser &user, std::string username);
     std::string const errNicknameTooLong(ClientUser &user, std::string nickname);
     std::string const errNicknameInUse(ClientUser &user, std::string nickname);
     std::string const errUnavailResource(ClientUser &user, std::string nickname_or_channel);

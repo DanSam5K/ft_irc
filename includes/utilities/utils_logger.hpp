@@ -16,38 +16,38 @@
 
 namespace logActionUtils
 {
-void info(std::string msg);
-void warn(std::string msg);
-void warn(std::string msg, std::string command);
-void error(std::string msg);
-void reply(int socket, std::string msg);
-void command(int socket, std::string command);
-std::string get_formatted_command(std::string command);
+	void info(std::string msg);
+	void warn(std::string msg);
+	void warn(std::string msg, std::string command);
+	void error(std::string msg);
+	void reply(int socket, std::string msg);
+	void command(int socket, std::string command);
+	std::string get_formatted_command(std::string command);
 
-template <typename T>
-void info(std::string msg, T detail)
-{
-	if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_INFO)
+	template <typename T>
+	void info(std::string msg, T detail)
 	{
-		return;
+		if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_INFO)
+		{
+			return;
+		}
+		std::stringstream ss;
+
+		ss << ANSI_RESET "[STATUS] " << msg << " " << detail << ANSI_RESET;
+		std::cerr << ss.str() << std::endl;
 	}
-	std::stringstream ss;
 
-	ss << ANSI_RESET "[STATUS] " << msg << " " << detail << ANSI_RESET;
-	std::cerr << ss.str() << std::endl;
-}
-
-template <typename T>
-void warn(std::string msg, T detail)
-{
-	if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_WARNING)
+	template <typename T>
+	void warn(std::string msg, T detail)
 	{
-		return;
-	}
-	std::stringstream ss;
+		if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_WARNING)
+		{
+			return;
+		}
+		std::stringstream ss;
 
-	ss << ANSI_FG_YELLOW "[WARN] " << msg << " " << detail << ANSI_RESET;
-	std::cerr << ss.str() << std::endl;
-}
+		ss << ANSI_FG_YELLOW "[WARN] " << msg << " " << detail << ANSI_RESET;
+		std::cerr << ss.str() << std::endl;
+	}
 }
 #endif

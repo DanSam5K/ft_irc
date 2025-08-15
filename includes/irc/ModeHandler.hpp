@@ -41,7 +41,7 @@ class ModeHandler
 
 		TargetCategory targetType;
 
-		ModeParser *parser;
+		// ModeParser *parser; // Unused field - removed
 
 		ClientUser *targetUser;
 		Channel *targetChannel;

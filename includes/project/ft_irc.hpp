@@ -75,7 +75,7 @@
 
 # define SERVER_PREFIX ":ircserv.42.de"
 # define SERVER_NAME "ircserv"
-# define SERVER_CREATION "7/03/2023"
+# define SERVER_CREATION "1/08/2025"
 # define SERVER_VERSION "0.01"
 
 # define ADMIN_INFO_1 "Wolfsburg, Germany"
@@ -99,6 +99,7 @@ bool is_in_list(std::list<T> list, T elem)
 }
 
 bool confirmChannel(std::string name);
+
 std::string stringToLowercase(std::string string);
 
 template <typename T, typename U>

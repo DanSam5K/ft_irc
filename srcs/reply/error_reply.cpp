@@ -264,7 +264,7 @@ std::string const rpl_msg::errErroneousNickname(ClientUser &user, std::string ni
 std::string const rpl_msg::errNicknameTooLong(ClientUser &user, std::string nickname)
 {
     std::string reply = SERVER_PREFIX " ";
-    reply += ERR_ERRONEUSNICKNAME " ";
+    reply += ERR_NICKNAMETOOLONG " ";
     reply += user.getNickname();
     reply += " ";
     reply += nickname;
@@ -404,7 +404,7 @@ std::string const rpl_msg::errTooManyParams(ClientUser &user, std::string comman
 std::string const rpl_msg::errAlreadyRegistered(ClientUser &user)
 {
     std::string reply = SERVER_PREFIX " ";
-    reply += ERR_ALREADYREGISTRED " ";
+    reply += ERR_ALREADYREGISTERED " ";
     reply += user.getNickname();
     reply += " :Unauthorized command (already registered)\r\n";
     return (reply);
@@ -662,6 +662,18 @@ std::string const rpl_msg::errGeneric(std::string msg)
     reply += "\r\n";
 	return (reply);
 }
+
+// // Reply when a username contains invalid characters
+// std::string const rpl_msg::errErroneousUsername(ClientUser &user, std::string username)
+// {
+//     std::string reply = SERVER_PREFIX " ";
+//     reply += ERR_ERRONEUSUSERNAME " ";
+//     reply += user.getNickname();
+//     reply += " ";
+//     reply += ;
+//     reply += " :Erroneous nickname\r\n";
+//     return (reply);
+// }
 
 
 

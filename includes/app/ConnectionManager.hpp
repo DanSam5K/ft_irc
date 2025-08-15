@@ -38,49 +38,49 @@ class ConnectionManager
 		void setupChannel(std::string name);
 
 	public:
-		ConnectionManager(Application &_appInstance, PasswordManager &_passHandler);
+		ConnectionManager(Application &appInstance, PasswordManager &password);
 		virtual ~ConnectionManager();
 
 		// ClientUser lifecycle
-		void registerPendingUser(int socket_fd);
+		void registerPendingUser(int socket_fd, const struct sockaddr_in& clientAddr);
 		void promoteUserToActive(ClientUser &user);
 		void disconnectUser(ClientUser &user);
 		void disconnectUserBySocket(int socket_fd);
 		void forciblyDisconnect(ClientUser &user);
 
 		// Channel Management
-		void setupChannelForUser(ClientUser &user, const std::string &channelName);
+		void setupChannelForUser(ClientUser &user, std::string channelName);
 		void deleteChannel(Channel &channel);
-		void updateUserNickname(ClientUser &user, const std::string &newNickname);
+		void updateUserNickname(ClientUser &user, std::string newNickname);
 
 		// IRC command dispatcher
-		void processClientCommand(ClientUser &sender, const std::string &rawMessage);
+		void processClientCommand(ClientUser &sender, std::string rawMessage);
 
 		// Accessors
 		ClientUser &getUserBySocket(int socket_fd);
-		ClientUser &getUserByNickname(const std::string &nickname);
-		bool checkUserNicknameExist(const std::string &nickname);
+		ClientUser &getUserByNickname(std::string nickname);
+		bool checkUserNicknameExist(std::string nickname);
 
 		Channel &getChannel(const std::string &name);
 		Channel &getDefaultChannel();
 		std::list<std::string> listAllChannelNames();
 
 		// ClientUser <-> Channel Relations
-		void joinUserToChannel(ClientUser &user, const std::string &channelName);
-		void removeUserFromChannel(ClientUser &user, const std::string &channelName);
+		void joinUserToChannel(ClientUser &user, std::string channelName);
+		void removeUserFromChannel(ClientUser &user, std::string channelName);
 		void removeUserFromAllChannels(ClientUser &user);
 
-		bool checkChannelExist(const std::string &name);
+		bool checkChannelExist(std::string name);
 		bool checkUserInAnyChannel(ClientUser &user);
 
 		std::list<Channel *> getUserChannels(ClientUser &user);
 		std::list<ClientUser *> getMutualChannelUsers(ClientUser &user);
 
 		// Security
-		void verifyConnectionPassword(const std::string &password);
+		void verifyConnectionPassword(std::string password);
 
 		// Messaging
-		void sendDirectMessage(int socket_fd, const std::string &message);
+		void sendDirectMessage(int socket_fd, std::string message);
 
 		// printing for debugging purposes
 		void printPendingUsers() const;

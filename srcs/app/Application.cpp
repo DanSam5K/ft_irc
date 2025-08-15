@@ -9,7 +9,7 @@ PasswordManager and ConnectionManager objects are dynamically allocated.
 
 Note: Consider using smart pointers (like std::auto_ptr in C++98 or at least clear deallocation) to avoid memory leaks. */
 
-Application::Application(int port, const std::string &password) 
+Application::Application(int port, std::string password) 
 	: _port(port), _activeConnections(0)
 {
 	setUpServer();
@@ -169,7 +169,7 @@ void Application::acceptNewClient()
 	client_fds[_activeConnections + 1].events = POLLIN | POLLOUT;
 
 	// Creating new user for client
-	_state->registerPendingUser(_clientSocket.fd);
+	_state->registerPendingUser(_clientSocket.fd, _clientSocket.address);
 	_activeConnections++;
 }
 

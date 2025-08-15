@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include "RequestParser.hpp"
 
-CommandMessage::CommandMessage(ClientUser &userRef, std::string &rawInput) : _originUser(userRef),
+CommandMessage::CommandMessage(ClientUser &userRef, std::string rawInput) : _originUser(userRef),
 	parser(NULL)
 {
 	if (rawInput.size() > MESSAGE_MAX_SIZE)
@@ -43,7 +43,7 @@ RequestParser CommandMessage::get_parser()
 	return (*parser);
 }
 
-std::string CommandMessage::getCommandArgument(const std::string &argumentName) const
+std::string CommandMessage::getCommandArgument(std::string argumentName)
 {
 	if (parser->containsArgument(argumentName))
 	{
@@ -55,7 +55,7 @@ std::string CommandMessage::getCommandArgument(const std::string &argumentName) 
 	}
 }
 
-std::list<std::string> CommandMessage::getCommandArgumentList(const std::string argumentName) const
+std::list<std::string> CommandMessage::getCommandArgumentList(std::string argumentName)
 {
 	if (parser->checkCommandArgumentList(argumentName))
 	{
@@ -67,12 +67,12 @@ std::list<std::string> CommandMessage::getCommandArgumentList(const std::string 
 	}
 }
 
-bool CommandMessage::checkCommandArgument(const std::string argumentName) const
+bool CommandMessage::checkCommandArgument(std::string argumentName)
 {
 	return (parser->containsArgument(argumentName));
 }
 
-bool CommandMessage::checkCommandArgumentList(const std::string argumentName) const
+bool CommandMessage::checkCommandArgumentList(std::string argumentName)
 {
 	return (parser->checkCommandArgumentList(argumentName));
 }

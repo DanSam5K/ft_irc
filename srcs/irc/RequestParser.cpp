@@ -10,24 +10,38 @@
 #define NUMBER_CMD 24
 
 std::string commands[NUMBER_CMD] = {
-	"ADMIN", "STATUS", "VERSION", "USERS", "NICK",
+	"ADMIN", "INFO", "VERSION", "USERS", "NICK",
 	"PRIVMSG", "USER", "QUIT", "JOIN", "LIST", "NAMES",
 	"SUMMON", "KICK", "PART", "MODE", "CAP", "PASS",
-	"KICK", "INVITE", "TOPIC", "PING", "PONG"
+	"INVITE", "TOPIC", "PING", "PONG"
 };
 std::string params[NUMBER_CMD][10] = {
-	{"modeTarget"}, {"modeTarget"}, {}, {}, 
+	{"target"}, {"target"}, {}, {}, 
 	{"nickname"}, {"msgtarget", "text to be sent"},
-	{"user", "ArgumentType", "unused", "realname"}, 
-	{"Quit CommandMessage"}, {"channel", "key"}, 
-	{"channel"}, {"channel", "modeTarget"}, 
-	{"user", "modeTarget", "channel"}, 
+	{"user", "mode", "unused", "realname"}, 
+	{"Quit Message"}, {"channel", "key"}, 
+	{"channel"}, {"channel", "target"}, 
+	{"user", "target", "channel"}, 
 	{"channel", "user", "comment"}, 
-	{"channel", "Part CommandMessage"}, 
-	{"modeTarget", "rawModeString", "ArgumentType modeArguments"}, 
-	{"a"}, {"password"}, {"channel", "user", "comment"}, {"nickname", "channel"}, {"channel", "topic"}, {"token"}, {"token"}};
+	{"channel", "Part Message"}, 
+	{"target", "modestring", "mode arguments"}, 
+	{"a"}, 	{"password"}, {"nickname", "channel"}, 
+	{"nickname", "channel"}, {"token"}, 
+	{"token"}
+};
 
-ArgumentType params_states[NUMBER_CMD][10] = {{OPTIONAL_ARG}, {OPTIONAL_ARG}, {}, {}, {REQUIRED}, {REQUIRED, OPTIONAL_ARG}, {REQUIRED, REQUIRED, REQUIRED, REQUIRED}, {OPTIONAL_ARG}, {MULTIPLE, OPTIONAL_LIST}, {OPTIONAL_LIST}, {OPTIONAL_LIST, OPTIONAL_ARG}, {REQUIRED, OPTIONAL_ARG, OPTIONAL_ARG}, {MULTIPLE, MULTIPLE, OPTIONAL_ARG}, {MULTIPLE, OPTIONAL_ARG}, {REQUIRED, OPTIONAL_ARG, MULTI_CHOICE}, {OPTIONAL_ARG}, {OPTIONAL_ARG}, {REQUIRED, MULTIPLE, OPTIONAL_ARG}, {REQUIRED, REQUIRED}, {REQUIRED, OPTIONAL_ARG}, {REQUIRED}, {REQUIRED}};
+ArgumentType params_states[NUMBER_CMD][10] = {
+	{OPTIONAL_ARG}, {OPTIONAL_ARG}, {}, {}, 
+	{REQUIRED}, {REQUIRED, OPTIONAL_ARG}, 
+	{REQUIRED, REQUIRED, REQUIRED, REQUIRED}, 
+	{OPTIONAL_ARG}, {MULTIPLE, OPTIONAL_LIST}, 
+	{OPTIONAL_LIST}, {OPTIONAL_LIST, OPTIONAL_ARG},
+	{REQUIRED, OPTIONAL_ARG, OPTIONAL_ARG}, 
+	{MULTIPLE, MULTIPLE, OPTIONAL_ARG}, {MULTIPLE, OPTIONAL_ARG}, 
+	{REQUIRED, OPTIONAL_ARG, MULTI_CHOICE}, {OPTIONAL_ARG}, {OPTIONAL_ARG}, 
+	{REQUIRED, REQUIRED}, {REQUIRED, REQUIRED}, {REQUIRED, OPTIONAL_ARG}, 
+	{REQUIRED}, {REQUIRED}
+};
 
 
 RequestParser::RequestParser(std::string rawInput) : tokenizer(InputTokenizer(
@@ -53,8 +67,10 @@ void RequestParser::normalizeCommand(std::string &command)
 	}
 }
 
-void RequestParser::parse(void)
+void RequestParser::parse()
 {
+
+
 	if (!is_in_array(command, commands, NUMBER_CMD))
 	{
 		throw RequestParser::InvalidCommandException();
@@ -73,7 +89,79 @@ void RequestParser::parse(void)
 	}
 }
 
-void RequestParser::parseNone(void)
+
+// void RequestParser::parse()
+// {
+//     // Tokenize the input string
+//     parsedTokens = tokenizer.getAllTokens();
+//     if (parsedTokens.empty())
+//         throw InvalidCommandException();
+
+//     // Normalize the command name (usually uppercase)
+//     command = parsedTokens[0];
+//     normalizeCommand(command);
+
+//     // USER command: expects username, mode, unused, realname
+//     if (command == "USER")
+//     {
+//         if (parsedTokens.size() >= 5)
+//         {
+//             parsedArguments["username"] = parsedTokens[1];
+//             parsedArguments["mode"] = parsedTokens[2];
+//             parsedArguments["unused"] = parsedTokens[3];
+//             std::string realname = parsedTokens[4];
+//             // Remove leading ':' from realname if present
+//             if (!realname.empty() && realname[0] == ':')
+//                 realname = realname.substr(1);
+//             parsedArguments["realname"] = realname;
+//         }
+//         else
+//         {
+//             throw MissingArgumentsException();
+//         }
+//         return;
+//     }
+
+//     // NICK command: expects nickname
+//     if (command == "NICK")
+//     {
+//         if (parsedTokens.size() >= 2)
+//             parsedArguments["nickname"] = parsedTokens[1];
+//         else
+//             throw MissingArgumentsException();
+//         return;
+//     }
+
+//     // PASS command: expects password
+//     if (command == "PASS")
+//     {
+//         if (parsedTokens.size() >= 2)
+//             parsedArguments["password"] = parsedTokens[1];
+//         else
+//             throw MissingArgumentsException();
+//         return;
+//     }
+
+//     // JOIN command: expects channel name(s)
+//     if (command == "JOIN")
+//     {
+//         if (parsedTokens.size() >= 2)
+//             argumentLists["channel"].push_back(parsedTokens[1]);
+//         else
+//             throw MissingArgumentsException();
+//         return;
+//     }
+
+//     // Add parsing for other commands as needed...
+
+//     // Default: store all tokens for generic access
+//     for (size_t i = 1; i < parsedTokens.size(); ++i)
+//     {
+//         argumentLists["args"].push_back(parsedTokens[i]);
+//     }
+// }
+
+void RequestParser::parseNone()
 {
 	if (parsedTokens.size() > 1)
 	{
@@ -82,7 +170,7 @@ void RequestParser::parseNone(void)
 	return;
 }
 
-void RequestParser::parseAdvanced(void)
+void RequestParser::parseAdvanced()
 {
 	unsigned int command_index = get_array_index(command, commands, NUMBER_CMD);
 	unsigned int i = 0;
@@ -225,12 +313,12 @@ bool RequestParser::setCurrentArgumentList(std::string argName)
 	}
 }
 
-void RequestParser::shiftArguments(void)
+void RequestParser::shiftArguments()
 {
 	currentIndex++;
 }
 
-std::string RequestParser::getCommandMessage(void)
+std::string RequestParser::getCommandMessage()
 {
 	return (command);
 }
@@ -245,7 +333,7 @@ std::list<std::string> RequestParser::getCommandArgumentList(std::string argName
 	return (argumentLists[argName]);
 }
 
-std::vector<std::string> RequestParser::getAllTokens(void)
+std::vector<std::string> RequestParser::getAllTokens()
 {
 	return (parsedTokens);
 }

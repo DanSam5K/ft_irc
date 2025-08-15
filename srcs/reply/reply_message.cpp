@@ -181,7 +181,7 @@ std::string const rpl_msg::infoEnd(ClientUser &user)
     std::string reply = SERVER_PREFIX " ";
     reply += RPL_ENDOFINFO " ";
     reply += user.getNickname();
-    reply += " :End of STATUS list\r\n";
+    reply += " :End of INFO list\r\n";
     return (reply);
 }
 
@@ -638,7 +638,7 @@ std::string const rpl_msg::invalidModeParam(ClientUser &sender, std::string chan
 // 	return (reply);
 // }
 
-// /* A server responding to an STATUS message is required to */
+// /* A server responding to an INFO message is required to */
 // /* send all its 'info' in a series of RPL_INFO messages */
 // /* with a RPL_ENDOFINFO reply to indicate the end of the */
 // /* replies. */
@@ -668,7 +668,7 @@ std::string const rpl_msg::invalidModeParam(ClientUser &sender, std::string chan
 // 	std::string reply = SERVER_PREFIX " ";
 // 	reply += RPL_ENDOFINFO " ";
 // 	reply += user.getNickname();
-// 	reply += " :End of STATUS list\r\n";
+// 	reply += " :End of INFO list\r\n";
 // 	return (reply);
 // }
 

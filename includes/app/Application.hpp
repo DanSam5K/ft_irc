@@ -59,10 +59,10 @@ class Application {
 		// Client communication
 		void readFromClients();
 		void handleIncomingIrcPayload(int fd);
-		void receiveCommands(int fd, std::string&messageBuf);
-		bool messageHasTerminator(std::string&messageBuf);
-		void extractCommands(int fd, std::string&messageBuf);
-		void processClientInput(int fd, std::string&messageBuf);
+		void receiveCommands(int fd, std::string &messageBuf);
+		bool messageHasTerminator(std::string &messageBuf);
+		void extractCommands(int fd, std::string &messageBuf);
+		void processClientInput(int fd, std::string &messageBuf);
 
 		// CommandMessage distribution
 		void broadcastPendingMessages();
@@ -73,12 +73,12 @@ class Application {
 		class NoAvailablePayloadException : public std::exception {};
 		class ClientDisconnectedException : public std::exception {};
 
-		Application(const Application&src);
-		Application &operator=(const Application&other);
+		Application(const Application &src);
+		Application &operator=(const Application &other);
 
 	public:
-		Application(int port, const std::string &password);
-		~Application();
+		Application(int port, std::string password);
+		virtual ~Application();
 
 		void launchServer();
 		void sendMessageToClient(int socket, const std::string &message);

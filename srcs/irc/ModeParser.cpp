@@ -2,7 +2,7 @@
 #include <cctype>
 #include <exception>
 
-ModeParser::ModeParser(const std::string &rawModeString) : rawModeString(rawModeString),
+ModeParser::ModeParser(std::string rawModeString) : rawModeString(rawModeString),
 	parseState(EXPECTING_MODE_CHAR), modeTargetType(ADD_MODE), currentIndex(0) {}
 
 ModeParser::~ModeParser() {}
@@ -69,6 +69,18 @@ void ModeParser::parseModeFlag()
 	}
 }
 
+
+
+std::string ModeParser::getAddedModeFlags()
+{
+	return (addedModeFlags);
+}
+
+std::string ModeParser::getRemovedModeFlags()
+{
+	return (removedModeFlags);
+}
+
 void ModeParser::shiftArguments()
 {
 	currentIndex++;
@@ -84,15 +96,4 @@ char ModeParser::getCurrentChar()
 	{
 		throw std::out_of_range("Index exceeds mode string length.");
 	}
-}
-
-
-std::string ModeParser::getAddedModeFlags() const
-{
-	return (addedModeFlags);
-}
-
-std::string ModeParser::getRemovedModeFlags() const
-{
-	return (removedModeFlags);
 }

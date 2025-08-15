@@ -20,36 +20,74 @@ MessageHandler::MessageHandler(ConnectionManager &context) : context(context)
 
 MessageHandler::~MessageHandler() {}
 
+
+// Handles a raw IRC command from a client, parses it, validates it, and dispatches to the correct handler.
+// Ensures that only eligible and valid commands are processed.
 void MessageHandler::processClientCommand(ClientUser &sender, const std::string &rawMessage)
 {
-	CommandMessage *message = NULL;
+    CommandMessage *message = NULL;
 
-	try
-	{
-		message = buildCommandMessage(sender, rawMessage);
-		checkMessageValidity(sender, *message);
-		if (checkMessageEligibility(sender, *message))
-		{
-			handler function = handle[message->getCommandMessage()];
-			(*this.*function)(*message);
-		}
-		else
-		{
-			sender.userBroadcast(rpl_msg::errNotRegistered(sender));
-		}
-		delete (message);
-	}
-	catch (std::exception &e)
-	{
-		logActionUtils::warn("CommandMessage Handler: CommandMessage creation error: ", e.what());
-		logActionUtils::warn("--> CommandMessage was", rawMessage);
-		if (message != NULL)
-		{
-			delete (message);
-		}
-		return ;
-	}
+    try
+    {
+        // Parse the raw input into a CommandMessage object
+        message = buildCommandMessage(sender, rawMessage);
+
+        // Validate the command structure and required arguments
+        checkMessageValidity(sender, *message);
+
+        // Only process commands if the user is eligible (registered, etc.)
+        if (checkMessageEligibility(sender, *message))
+        {
+            handler function = handle[message->getCommandMessage()];
+            (this->*function)(*message); // Dispatch to the appropriate handler
+        }
+        else
+        {
+            // Inform the user they are not registered for this command
+            sender.userBroadcast(rpl_msg::errNotRegistered(sender));
+        }
+    }
+    catch (std::exception &e)
+    {
+        // Log any errors encountered during command handling
+        logActionUtils::warn("CommandMessage Handler: error: ", e.what());
+        logActionUtils::warn("--> Raw command: ", rawMessage);
+    }
+    // Clean up the CommandMessage object
+    if (message != NULL)
+        delete message;
 }
+
+// void MessageHandler::processClientCommand(ClientUser &sender, const std::string &rawMessage)
+// {
+// 	CommandMessage *message = NULL;
+
+// 	try
+// 	{
+// 		message = buildCommandMessage(sender, rawMessage);
+// 		checkMessageValidity(sender, *message);
+// 		if (checkMessageEligibility(sender, *message))
+// 		{
+// 			handler function = handle[message->getCommandMessage()];
+// 			(*this.*function)(*message);
+// 		}
+// 		else
+// 		{
+// 			sender.userBroadcast(rpl_msg::errNotRegistered(sender));
+// 		}
+// 		delete (message);
+// 	}
+// 	catch (std::exception &e)
+// 	{
+// 		logActionUtils::warn("CommandMessage Handler: CommandMessage creation error: ", e.what());
+// 		logActionUtils::warn("--> CommandMessage was", rawMessage);
+// 		if (message != NULL)
+// 		{
+// 			delete (message);
+// 		}
+// 		return ;
+// 	}
+// }
 
 CommandMessage *MessageHandler::buildCommandMessage(ClientUser &sender,
         std::string rawMessage)
@@ -98,32 +136,60 @@ void MessageHandler::checkMessageValidity(ClientUser &sender, CommandMessage &me
 	}
 }
 
+
+// Determines if the user is allowed to execute the given command based on registration and password status.
 bool MessageHandler::checkMessageEligibility(ClientUser &sender, CommandMessage &message)
 {
-	std::string command = message.getCommandMessage();
-	if (sender.confirmFullyRegistered() == true)
-	{
-		return (true);
-	}
-	else if (sender.passwordEnabled() == true
-	          && (command == "USER" || command == "NICK" || command == "CAP"
-	               || command == "PASS" || command == "QUIT"))
-	{
-		return (true);
-	}
-	else if (sender.passwordEnabled() == false
-	          && (command == "CAP" || command == "PASS" || command == "QUIT"))
-	{
-		return (true);
-	}
-	return (false);
+    std::string command = message.getCommandMessage();
+
+    // Fully registered users can execute any command
+    if (sender.confirmFullyRegistered())
+        return true;
+
+    // Users who have passed password check can execute registration-related commands
+    if (sender.passwordEnabled() &&
+        (command == "USER" || command == "NICK" || command == "CAP" ||
+         command == "PASS" || command == "QUIT"))
+        return true;
+
+    // Users who have not passed password can only use CAP, PASS, or QUIT
+    if (!sender.passwordEnabled() &&
+        (command == "CAP" || command == "PASS" || command == "QUIT"))
+        return true;
+
+    // All other cases are not eligible
+    return false;
 }
 
+
+// bool MessageHandler::checkMessageEligibility(ClientUser &sender, CommandMessage &message)
+// {
+// 	std::string command = message.getCommandMessage();
+// 	if (sender.confirmFullyRegistered() == true)
+// 	{
+// 		return (true);
+// 	}
+// 	else if (sender.passwordEnabled() == true
+// 	          && (command == "USER" || command == "NICK" || command == "CAP"
+// 	               || command == "PASS" || command == "QUIT"))
+// 	{
+// 		return (true);
+// 	}
+// 	else if (sender.passwordEnabled() == false
+// 	          && (command == "CAP" || command == "PASS" || command == "QUIT"))
+// 	{
+// 		return (true);
+// 	}
+// 	return (false);
+// }
+
+
+// Registers all supported IRC command handlers by mapping command names to their handler functions.
 void MessageHandler::configureMessageHandlers()
 {
 	handle.insert(handlerPair("ADMIN", &MessageHandler::adminCommandHandler));
 	handle.insert(handlerPair("CAP", &MessageHandler::capRequestHandler));
-	handle.insert(handlerPair("STATUS", &MessageHandler::infoCommandHandler));
+	handle.insert(handlerPair("INFO", &MessageHandler::infoCommandHandler));
 	handle.insert(handlerPair("JOIN", &MessageHandler::joinCommandHandler));
 	handle.insert(handlerPair("KICK", &MessageHandler::kickCommandHandler));
 	handle.insert(handlerPair("LIST", &MessageHandler::listCommandHandler));
@@ -535,36 +601,68 @@ void MessageHandler::namesCommandHandler(CommandMessage &message)
 
 void MessageHandler::nickChangeHandler(CommandMessage &message)
 {
-	ClientUser &sender = message.getMessageSender();
-	std::string nickname = message.getCommandArgument("nickname");
-	if (context.checkUserNicknameExist(nickname) == true)
-	{
-		sender.userBroadcast(rpl_msg::errNicknameInUse(sender, nickname));
-		return ;
-	}
-	try
-	{
-		bool user_is_already_registered = sender.confirmFullyRegistered();
-		std::string old_id = sender.getIdentifier();
-		sender.setNickname(nickname);
-		if (user_is_already_registered)
-		{
-			sender.userBroadcast(rpl_msg::confirmation(old_id, message));
-		}
-		else
-		{
-			greetNewUser(sender);
-		}
-	}
-	catch (ClientUser::InvalidNicknameException &e)
-	{
-		sender.userBroadcast(rpl_msg::errErroneousNickname(sender, nickname));
-	}
-	catch (ClientUser::NicknameTooLongException &e)
-	{
-		sender.userBroadcast(rpl_msg::errNicknameTooLong(sender, nickname));
-	}
+    ClientUser &sender = message.getMessageSender();
+    std::string nickname = message.getCommandArgument("nickname");
+    if (context.checkUserNicknameExist(nickname) == true)
+    {
+        sender.userBroadcast(rpl_msg::errNicknameInUse(sender, nickname));
+        return ;
+    }
+    try
+    {
+        bool user_is_already_registered = sender.confirmFullyRegistered();
+        std::string old_id = sender.getIdentifier();
+        sender.setNickname(nickname);
+
+        // Only send confirmation if user was already registered
+        if (user_is_already_registered)
+        {
+            sender.userBroadcast(rpl_msg::confirmation(old_id, message));
+        }
+        // Note: Registration will happen in USER command when all details are set
+    }
+    catch (ClientUser::InvalidNicknameException &e)
+    {
+        sender.userBroadcast(rpl_msg::errErroneousNickname(sender, nickname));
+    }
+    catch (ClientUser::NicknameTooLongException &e)
+    {
+        sender.userBroadcast(rpl_msg::errNicknameTooLong(sender, nickname));
+    }
 }
+
+// void MessageHandler::nickChangeHandler(CommandMessage &message)
+// {
+// 	ClientUser &sender = message.getMessageSender();
+// 	std::string nickname = message.getCommandArgument("nickname");
+// 	if (context.checkUserNicknameExist(nickname) == true)
+// 	{
+// 		sender.userBroadcast(rpl_msg::errNicknameInUse(sender, nickname));
+// 		return ;
+// 	}
+// 	try
+// 	{
+// 		bool user_is_already_registered = sender.confirmFullyRegistered();
+// 		std::string old_id = sender.getIdentifier();
+// 		sender.setNickname(nickname);
+// 		if (user_is_already_registered)
+// 		{
+// 			sender.userBroadcast(rpl_msg::confirmation(old_id, message));
+// 		}
+// 		else
+// 		{
+// 			greetNewUser(sender);
+// 		}
+// 	}
+// 	catch (ClientUser::InvalidNicknameException &e)
+// 	{
+// 		sender.userBroadcast(rpl_msg::errErroneousNickname(sender, nickname));
+// 	}
+// 	catch (ClientUser::NicknameTooLongException &e)
+// 	{
+// 		sender.userBroadcast(rpl_msg::errNicknameTooLong(sender, nickname));
+// 	}
+// }
 
 void MessageHandler::partCommandHandler(CommandMessage &message)
 {
@@ -685,42 +783,81 @@ void MessageHandler::quitCommandHandler(CommandMessage &message)
 	context.forciblyDisconnect(sender);
 }
 
+
+void MessageHandler::userCommandHandler(CommandMessage &message)
+{
+    ClientUser &sender = message.getMessageSender();
+    if (sender.confirmFullyRegistered())
+    {
+        sender.userBroadcast(rpl_msg::errAlreadyRegistered(sender));
+        return ;
+    }
+    // Note: checkAllUserDetails() will return false for new users, which is expected
+    // We only need to check if they're already registered
+    try
+    {
+        // Set username and realname from message arguments
+        // Note: hostname should be set from connection info, not from USER command
+        std::string username = message.getCommandArgument("user");
+        std::string realname = message.getCommandArgument("realname");
+        sender.setUsername(username);
+        sender.setRealname(realname);
+        // Hostname will be set from connection information, not from USER command
+
+        // Check if user has set nickname and passed password
+        if (sender.passwordEnabled() && sender.getNickname() != "*" && sender.getUsername() != "*" && sender.getRealname() != "*")
+        {
+            // User is ready for registration - promote to active and send welcome messages
+            context.promoteUserToActive(sender);
+            greetNewUser(sender); // Send welcome messages
+        }
+    }
+    catch (ClientUser::InvalidUsernameException &e)
+    {
+        sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, "USER"));
+    }
+    catch (std::exception &e)
+    {
+        logActionUtils::warn("USER command error: ", e.what());
+    }
+}
+
 void MessageHandler::summonCommandHandler(CommandMessage &message)
 {
 	ClientUser &sender = message.getMessageSender();
 	sender.userBroadcast(rpl_msg::errSummonDisabled(sender));
 }
 
-void MessageHandler::userCommandHandler(CommandMessage &message)
-{
+// void MessageHandler::userCommandHandler(CommandMessage &message)
+// {
 
-	ClientUser &sender = message.getMessageSender();
-	if (sender.confirmFullyRegistered())
-	{
-		sender.userBroadcast(rpl_msg::errAlreadyRegistered(sender));
-		return ;
-	}
-	else if (sender.checkAllUserDetails())
-	{
-		sender.userBroadcast(rpl_msg::errNotRegistered(sender));
-		return;
-	}
-	try
-	{
-		sender.setUsername(message.getCommandArgument("user"));
-		sender.setHostname(message.getCommandArgument("unused"));
-		sender.setRealname(message.getCommandArgument("realname"));
-		greetNewUser(sender);
-	}
-	catch (ClientUser::InvalidUsernameException &e)
-	{
-		sender.userBroadcast(rpl_msg::errInvalidUsername());
-	}
-	catch (std::exception &e)
-	{
-		logActionUtils::warn("MessageHandler: USER:", e.what());
-	}
-}
+// 	ClientUser &sender = message.getMessageSender();
+// 	if (sender.confirmFullyRegistered())
+// 	{
+// 		sender.userBroadcast(rpl_msg::errAlreadyRegistered(sender));
+// 		return ;
+// 	}
+// 	else if (sender.checkAllUserDetails())
+// 	{
+// 		sender.userBroadcast(rpl_msg::errNotRegistered(sender));
+// 		return;
+// 	}
+// 	try
+// 	{
+// 		sender.setUsername(message.getCommandArgument("user"));
+// 		sender.setHostname(message.getCommandArgument("unused"));
+// 		sender.setRealname(message.getCommandArgument("realname"));
+// 		greetNewUser(sender);
+// 	}
+// 	catch (ClientUser::InvalidUsernameException &e)
+// 	{
+// 		sender.userBroadcast(rpl_msg::errInvalidUsername());
+// 	}
+// 	catch (std::exception &e)
+// 	{
+// 		logActionUtils::warn("MessageHandler: USER:", e.what());
+// 	}
+// }
 
 void MessageHandler::usersCommandHandler(CommandMessage &message)
 {
@@ -742,7 +879,7 @@ void MessageHandler::greetNewUser(ClientUser &user)
 	}
 	try
 	{
-		context.promoteUserToActive(user);
+		// User is already promoted to active status, just send welcome messages
 		user.userBroadcast(rpl_msg::welcome(user));
 		user.userBroadcast(rpl_msg::yourHost(user));
 		user.userBroadcast(rpl_msg::created(user));
@@ -758,12 +895,26 @@ void MessageHandler::pingCommandHandler(CommandMessage &message)
 {
 	ClientUser &sender = message.getMessageSender();
 
-	if (message.getCommandArgument("token") == "")
+	try
+	{
+		std::string token = message.getCommandArgument("token");
+		// Remove leading colon if present (IRC protocol allows PING :token or PING token)
+		if (!token.empty() && token[0] == ':')
+		{
+			token = token.substr(1);
+		}
+		
+		if (token.empty())
+		{
+			sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, "PING"));
+			return;
+		}
+		sender.userBroadcast(rpl_msg::pong(sender, message));
+	}
+	catch (std::exception &e)
 	{
 		sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, "PING"));
-		return;
 	}
-	sender.userBroadcast(rpl_msg::pong(sender, message));
 }
 
 void MessageHandler::pongCommandHandler(CommandMessage &message)
