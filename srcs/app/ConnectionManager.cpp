@@ -28,9 +28,15 @@ ConnectionManager::~ConnectionManager()
 	delete_map(_channels);
 }
 
-void ConnectionManager::registerPendingUser(int socket)
+void ConnectionManager::registerPendingUser(int socket, const struct sockaddr_in& clientAddr)
 {
 	ClientUser *newUser = new ClientUser(*this, socket);
+	
+	// Set hostname from client address
+	char hostname[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &(clientAddr.sin_addr), hostname, INET_ADDRSTRLEN);
+	newUser->setHostname(hostname);
+	
 	_pendingUsers.insert(nickNameUserPair (socket, newUser));
 }
 
@@ -61,7 +67,7 @@ void ConnectionManager::disconnectUser(ClientUser &user)
 
 void ConnectionManager::disconnectUserBySocket(int socket)
 {
-	ClientUser user = getUserBySocket(socket);
+	ClientUser &user = getUserBySocket(socket);
 	disconnectUser(user);
 }
 
@@ -115,12 +121,12 @@ void ConnectionManager::joinUserToChannel(ClientUser &user, std::string channelN
 	}
 	else
 	{
-		std::string channelName = stringToLowercase(channelName);
+		std::string lowerChannelName = stringToLowercase(channelName);
 		// logActionUtils::info("ConnectionManager: Adding user \"" + user.getNickname() +
-		//                  "\" to channel " + channelName);
-		logActionUtils::info("User \"" + user.getNickname() + "\" added to channel " + channelName);
-		_channels[channelName]->addUserToChannel(user);
-		if (channelName != FALLBACK_CHANNEL
+		//                  "\" to channel " + lowerChannelName);
+		logActionUtils::info("User \"" + user.getNickname() + "\" added to channel " + lowerChannelName);
+		_channels[lowerChannelName]->addUserToChannel(user);
+		if (lowerChannelName != FALLBACK_CHANNEL
 		        && _channels[FALLBACK_CHANNEL]->confirmInChannelByUser(user))
 		{
 			_channels[FALLBACK_CHANNEL]->removeUserFromChannel(user);
@@ -137,14 +143,14 @@ void ConnectionManager::removeUserFromChannel(ClientUser &user, std::string chan
 	}
 	else
 	{
-		std::string channelName = stringToLowercase(channelName);
+		std::string lowerChannelName = stringToLowercase(channelName);
 		// logActionUtils::info("ConnectionManager: Removing user \"" + user.getNickname() +
-		//                  "\" from channel " + channelName);
-		logActionUtils::info("User \"" + user.getNickname() + "\" removed from channel " + channelName);
+		//                  "\" from channel " + lowerChannelName);
+		logActionUtils::info("User \"" + user.getNickname() + "\" removed from channel " + lowerChannelName);
 
-		_channels[channelName]->removeUserFromChannel(user);
-		_channels[channelName]->demoteOperatorByUser(user);
-		if (checkUserInAnyChannel(user) == false && channelName != FALLBACK_CHANNEL)
+		_channels[lowerChannelName]->removeUserFromChannel(user);
+		_channels[lowerChannelName]->demoteOperatorByUser(user);
+		if (checkUserInAnyChannel(user) == false && lowerChannelName != FALLBACK_CHANNEL)
 		{
 			// logActionUtils::info("ConnectionManager: Adding user \"" + user.getNickname() +
 			//                  "\" to channel *, because user is no longer in any channel");

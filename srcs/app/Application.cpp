@@ -169,7 +169,7 @@ void Application::acceptNewClient()
 	client_fds[_activeConnections + 1].events = POLLIN | POLLOUT;
 
 	// Creating new user for client
-	_state->registerPendingUser(_clientSocket.fd);
+	_state->registerPendingUser(_clientSocket.fd, _clientSocket.address);
 	_activeConnections++;
 }
 

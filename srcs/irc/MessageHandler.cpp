@@ -614,16 +614,12 @@ void MessageHandler::nickChangeHandler(CommandMessage &message)
         std::string old_id = sender.getIdentifier();
         sender.setNickname(nickname);
 
-        // Registration check after nickname change
-        if (!user_is_already_registered && sender.passwordEnabled() && sender.getUsername() != "*" && sender.getRealname() != "*")
-        {
-            sender.setRegistered();
-            greetNewUser(sender);
-        }
-        else if (user_is_already_registered)
+        // Only send confirmation if user was already registered
+        if (user_is_already_registered)
         {
             sender.userBroadcast(rpl_msg::confirmation(old_id, message));
         }
+        // Note: Registration will happen in USER command when all details are set
     }
     catch (ClientUser::InvalidNicknameException &e)
     {
@@ -796,25 +792,23 @@ void MessageHandler::userCommandHandler(CommandMessage &message)
         sender.userBroadcast(rpl_msg::errAlreadyRegistered(sender));
         return ;
     }
-    else if (sender.checkAllUserDetails())
-    {
-        sender.userBroadcast(rpl_msg::errNotRegistered(sender));
-        return;
-    }
+    // Note: checkAllUserDetails() will return false for new users, which is expected
+    // We only need to check if they're already registered
     try
     {
-        // Set username, realname, hostname from message arguments
-        std::string username = message.getCommandArgument("username");
+        // Set username and realname from message arguments
+        // Note: hostname should be set from connection info, not from USER command
+        std::string username = message.getCommandArgument("user");
         std::string realname = message.getCommandArgument("realname");
-        std::string hostname = message.getCommandArgument("hostname");
         sender.setUsername(username);
         sender.setRealname(realname);
-        sender.setHostname(hostname);
+        // Hostname will be set from connection information, not from USER command
 
         // Check if user has set nickname and passed password
         if (sender.passwordEnabled() && sender.getNickname() != "*" && sender.getUsername() != "*" && sender.getRealname() != "*")
         {
-            sender.setRegistered();
+            // User is ready for registration - promote to active and send welcome messages
+            context.promoteUserToActive(sender);
             greetNewUser(sender); // Send welcome messages
         }
     }
@@ -885,7 +879,7 @@ void MessageHandler::greetNewUser(ClientUser &user)
 	}
 	try
 	{
-		context.promoteUserToActive(user);
+		// User is already promoted to active status, just send welcome messages
 		user.userBroadcast(rpl_msg::welcome(user));
 		user.userBroadcast(rpl_msg::yourHost(user));
 		user.userBroadcast(rpl_msg::created(user));
@@ -901,12 +895,26 @@ void MessageHandler::pingCommandHandler(CommandMessage &message)
 {
 	ClientUser &sender = message.getMessageSender();
 
-	if (message.getCommandArgument("token") == "")
+	try
+	{
+		std::string token = message.getCommandArgument("token");
+		// Remove leading colon if present (IRC protocol allows PING :token or PING token)
+		if (!token.empty() && token[0] == ':')
+		{
+			token = token.substr(1);
+		}
+		
+		if (token.empty())
+		{
+			sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, "PING"));
+			return;
+		}
+		sender.userBroadcast(rpl_msg::pong(sender, message));
+	}
+	catch (std::exception &e)
 	{
 		sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, "PING"));
-		return;
 	}
-	sender.userBroadcast(rpl_msg::pong(sender, message));
 }
 
 void MessageHandler::pongCommandHandler(CommandMessage &message)

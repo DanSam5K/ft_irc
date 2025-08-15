@@ -42,7 +42,7 @@ class ConnectionManager
 		virtual ~ConnectionManager();
 
 		// ClientUser lifecycle
-		void registerPendingUser(int socket_fd);
+		void registerPendingUser(int socket_fd, const struct sockaddr_in& clientAddr);
 		void promoteUserToActive(ClientUser &user);
 		void disconnectUser(ClientUser &user);
 		void disconnectUserBySocket(int socket_fd);
