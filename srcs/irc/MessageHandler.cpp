@@ -374,22 +374,28 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 				if (channel.checkInviteToChannelOnly() && !channel.checkInvitedByUser(sender))
 				{
 					sender.userBroadcast(rpl_msg::errInviteOnlyChannel(sender, channel.getChannelName()));
+					continue;
 				}
 				else if (channel.checkPasswordProtection()
 				          && !channel.checkPassword(*passes))
 				{
 					sender.userBroadcast(rpl_msg::errBadChannelKey(sender, channel.getChannelName()));
+					continue;
 				}
 				else if (channel.checkRestrictionPoint())
 				{
 					sender.userBroadcast(rpl_msg::errChanneListFull(sender, channel.getChannelName()));
+					continue;
 				}
 				else
 				{
 					context.joinUserToChannel(sender, *chans);
 					channel.revokeInvite(sender.getNickname());
 					channel.broadcast(rpl_msg::joinChannel(sender, channel));
-					sender.userBroadcast(rpl_msg::topic(message, channel));
+					if (!channel.getTopicMessage().empty())
+					{
+						sender.userBroadcast(rpl_msg::topic(message, channel));
+					}
 					sender.userBroadcast(rpl_msg::nameReply(sender, channel));
 					sender.userBroadcast(rpl_msg::endOfNames(sender, channel.getChannelName()));
 				}
