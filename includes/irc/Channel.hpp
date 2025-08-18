@@ -81,6 +81,7 @@ class Channel
 		void promoteOperatorByUser(ClientUser &user);
 		void promoteOperatorByNickname(std::string nickname);
 		void demoteOperatorByNickname(std::string nickname);
+		void transferOperatorToNextUser();
 
 		// Checks
 		bool checkTopicRestricted() const;

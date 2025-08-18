@@ -207,6 +207,7 @@ void ModeHandler::inviteChannelEnableHandler()
 	if (!targetChannel->checkInviteToChannelOnly())
 	{
 		targetChannel->setInviteOnly(true);
+		targetChannel->addModeFlags("i");
 		targetChannel->clearInvites();
 		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "+i"));
@@ -219,6 +220,7 @@ void ModeHandler::inviteChannelDisableHandler()
 	if (targetChannel->checkInviteToChannelOnly())
 	{
 		targetChannel->setInviteOnly(false);
+		targetChannel->removeModeFlags("i");
 		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "-i"));
 	}
@@ -230,6 +232,7 @@ void ModeHandler::topicChannelEnableHandler()
 	if (!targetChannel->checkTopicRestricted())
 	{
 		targetChannel->setTopicLock(true);
+		targetChannel->addModeFlags("t");
 		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "+t"));
 	}
@@ -241,6 +244,7 @@ void ModeHandler::topicChannelDisableHandler()
 	if (targetChannel->checkTopicRestricted())
 	{
 		targetChannel->setTopicLock(false);
+		targetChannel->removeModeFlags("t");
 		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "-t"));
 	}
@@ -267,6 +271,7 @@ void ModeHandler::keyChannelEnableHandler()
 		return;
 	}
 	targetChannel->setPassword(argument);
+	targetChannel->addModeFlags("k");
 	targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 	                            "+k " + argument));
 	return;
@@ -277,6 +282,7 @@ void ModeHandler::keyChannelDisableHandler()
 	if (targetChannel->checkPasswordProtection())
 	{
 		targetChannel->removePassword();
+		targetChannel->removeModeFlags("k");
 		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "-k"));
 	}
@@ -364,6 +370,7 @@ void ModeHandler::limitChannelUserEnableHandler()
 				return;
 			}
 			targetChannel->setUserLimit(limit);
+			targetChannel->addModeFlags("l");
 			targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 			                            "+l " + argument));
 		}
@@ -380,6 +387,7 @@ void ModeHandler::limitChannelUserDisableHandler()
 	if (targetChannel->checkUserRestriction())
 	{
 		targetChannel->removeUserRestriction();
+		targetChannel->removeModeFlags("l");
 		targetChannel->broadcast(rpl_msg::modeChannel(sender, *targetChannel,
 		                            "-l"));
 	}

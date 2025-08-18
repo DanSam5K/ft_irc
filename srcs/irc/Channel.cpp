@@ -115,9 +115,20 @@ void Channel::addUserToChannel(ClientUser &user)
 void Channel::removeUserFromChannel(ClientUser &user)
 {
 	logActionUtils::info("Channel \"" + this->channelName + "\": ClientUser \"" + 
-					 user.getNickname() + "\" checkCommandArgument been removed");
+					 user.getNickname() + "\" has been removed");
+	
+	bool wasOperator = checkChannelOperatorByUser(user);
+	bool wasCreator = checkChannelCreatorByUser(user);
+	
 	usersRegistry.erase(user.getNickname());
 	operatorList.erase(user.getNickname());
+	
+	// If the user was an operator and there are still users in the channel
+	// but no operators left, transfer operator status to the first user
+	if ((wasOperator || wasCreator) && !usersRegistry.empty() && operatorList.empty())
+	{
+		transferOperatorToNextUser();
+	}
 }
 
 void Channel::updateUserNickname(ClientUser &user, std::string new_nick)
@@ -455,4 +466,24 @@ std::string Channel::getModeString() const
 		rawModeString += "t";
 	}
 	return rawModeString;
+}
+
+void Channel::transferOperatorToNextUser()
+{
+	if (usersRegistry.empty())
+	{
+		return;
+	}
+	
+	// Find the first user in the channel and make them an operator
+	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
+	if (it != usersRegistry.end())
+	{
+		promoteOperatorByUser(*(it->second));
+		logActionUtils::info("Channel \"" + this->channelName + "\": Operator status transferred to \"" + 
+							it->first + "\"");
+		
+		// Broadcast the operator change to all users in the channel
+		broadcast(rpl_msg::modeChannel(*(it->second), *this, "+o " + it->first));
+	}
 }
