@@ -3,7 +3,7 @@
 #include <exception>
 
 ModeParser::ModeParser(std::string rawModeString) : rawModeString(rawModeString),
-	parseState(EXPECTING_MODE_CHAR), modeTargetType(ADD_MODE), currentIndex(0) {}
+	parseState(AWAITING_SIGN), modeTargetType(ADD_MODE), currentIndex(0) {}
 
 ModeParser::~ModeParser() {}
 

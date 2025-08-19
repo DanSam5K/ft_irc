@@ -24,9 +24,9 @@ std::string params[NUMBER_CMD][10] = {
 	{"user", "target", "channel"}, 
 	{"channel", "user", "comment"}, 
 	{"channel", "Part Message"}, 
-	{"target", "modestring", "mode arguments"}, 
+	{"modeTarget", "rawModeString", "modeChar modeArguments"}, 
 	{"a"}, 	{"password"}, {"nickname", "channel"}, 
-	{"nickname", "channel"}, {"token"}, 
+	{"channel", "topic"}, {"token"}, 
 	{"token"}
 };
 
@@ -36,10 +36,10 @@ ArgumentType params_states[NUMBER_CMD][10] = {
 	{REQUIRED, REQUIRED, REQUIRED, REQUIRED}, 
 	{OPTIONAL_ARG}, {MULTIPLE, OPTIONAL_LIST}, 
 	{OPTIONAL_LIST}, {OPTIONAL_LIST, OPTIONAL_ARG},
-	{REQUIRED, OPTIONAL_ARG, OPTIONAL_ARG}, 
+	{REQUIRED, OPTIONAL_ARG, MULTI_CHOICE}, 
 	{MULTIPLE, MULTIPLE, OPTIONAL_ARG}, {MULTIPLE, OPTIONAL_ARG}, 
 	{REQUIRED, OPTIONAL_ARG, MULTI_CHOICE}, {OPTIONAL_ARG}, {OPTIONAL_ARG}, 
-	{REQUIRED, REQUIRED}, {REQUIRED, REQUIRED}, {REQUIRED, OPTIONAL_ARG}, 
+	{REQUIRED, REQUIRED}, {REQUIRED, OPTIONAL_ARG}, {REQUIRED, OPTIONAL_ARG}, 
 	{REQUIRED}, {REQUIRED}
 };
 
