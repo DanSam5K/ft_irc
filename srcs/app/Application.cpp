@@ -222,36 +222,35 @@ void Application::cleanUpMessagesFromRemovedClient(int fd)
 
 void Application::handleIncomingIrcPayload(int fd)
 {
-	static std::string messageBuf;
+	static std::map<int, std::string> clientMessageBuffers;
 
 	try
 	{
-		receiveCommands(fd, messageBuf);
+		receiveCommands(fd, clientMessageBuffers[fd]);
 	}
 	catch (Application::ClientDisconnectedException &e)
 	{
-		messageBuf = "";
+		clientMessageBuffers.erase(fd);
 		removeClient(fd);
 	}
 }
 
 void Application::receiveCommands(int fd, std::string &messageBuf)
 {
-	while (!messageHasTerminator(messageBuf) && !SignalManager::shouldShutdown)
+	try
 	{
-		try
-		{
-			extractCommands(fd, messageBuf);
-			processClientInput(fd, messageBuf);
-		}
-		catch (Application::NoAvailablePayloadException &e)
-		{
-			break ;
-		}
-		catch (ConnectionManager::UserNotFoundException &e)
-		{
-			logActionUtils::warn("Application: ConnectionManager:", e.what());
-		}
+		extractCommands(fd, messageBuf);
+		processClientInput(fd, messageBuf);
+	}
+	catch (Application::NoAvailablePayloadException &e)
+	{
+		// No data available right now, continue processing
+		return;
+	}
+	catch (ConnectionManager::UserNotFoundException &e)
+	{
+		logActionUtils::warn("Application: ConnectionManager:", e.what());
+		throw ClientDisconnectedException();
 	}
 }	
 
@@ -289,7 +288,7 @@ void Application::extractCommands(int fd, std::string &messageBuf)
 		// logActionUtils::warn("Application: read returned 0, read:", buf);
 		throw ClientDisconnectedException();
 	}
-	messageBuf += std::string(buf);
+	messageBuf += std::string(buf, bytes_recv);
 }
 
 void Application::processClientInput(int fd, std::string &messageBuf)
@@ -305,11 +304,21 @@ void Application::processClientInput(int fd, std::string &messageBuf)
 	{
 		std::string first_command = messageBuf.substr(pos, terminator + 2 - pos);
 		logActionUtils::command(fd, first_command);
-		_state->processClientCommand(_state->getUserBySocket(fd), first_command);
+		
+		try
+		{
+			_state->processClientCommand(_state->getUserBySocket(fd), first_command);
+		}
+		catch (ConnectionManager::UserNotFoundException &e)
+		{
+			logActionUtils::warn("Application: User not found for socket", fd);
+			throw ClientDisconnectedException();
+		}
+		
 		pos = terminator + 2;
 		terminator = messageBuf.find("\r\n", pos);
 	}
-	messageBuf = "";
+	messageBuf = messageBuf.substr(pos);
 }
 
 void Application::sendMessageToClient(int socket, const std::string&message)
