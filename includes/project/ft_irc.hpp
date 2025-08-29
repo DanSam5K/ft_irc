@@ -51,9 +51,9 @@ std::string stringToLowercase(std::string string);
 
 // Returns true if elem is found in the list
 template <typename T>
-bool is_in_list(std::list<T>& list, T& elem)
+bool is_in_list(std::list<T> list, T elem)
 {
-    for (typename std::list<T>::const_iterator it = list.begin(); it != list.end(); ++it)
+    for (typename std::list<T>::iterator it = list.begin(); it != list.end(); ++it)
     {
         if (*it == elem)
             return true;
@@ -63,7 +63,7 @@ bool is_in_list(std::list<T>& list, T& elem)
 
 // Deletes all values in a map and clears it
 template <typename T, typename U>
-void delete_map(std::map<T, U>& map)
+void delete_map(std::map<T, U> &map)
 {
     for (typename std::map<T, U>::iterator it = map.begin(); it != map.end(); ++it)
     {
@@ -74,7 +74,7 @@ void delete_map(std::map<T, U>& map)
 
 // Checks if value exists in a static array
 template<typename T>
-bool is_in_array(T& value, T array[], unsigned int size_array)
+bool is_in_array(T value, T array[], unsigned int size_array)
 {
     for (unsigned int i = 0; i < size_array; ++i)
     {
@@ -86,7 +86,7 @@ bool is_in_array(T& value, T array[], unsigned int size_array)
 
 // Returns the index of value in array, or -1 if not found
 template<typename T>
-unsigned int get_array_index(T& value, T array[], unsigned int size_array)
+unsigned int get_array_index(T value, T array[], unsigned int size_array)
 {
     for (unsigned int i = 0; i < size_array; ++i)
     {
