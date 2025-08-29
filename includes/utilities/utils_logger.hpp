@@ -22,7 +22,7 @@ namespace logActionUtils
 	void error(std::string msg);
 	void reply(int socket, std::string msg);
 	void command(int socket, std::string command);
-	std::string get_formatted_command(std::string command);
+	std::string getFormattedCommand(std::string command);
 
 	template <typename T>
 	void info(std::string msg, T detail)

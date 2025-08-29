@@ -637,38 +637,6 @@ void MessageHandler::nickChangeHandler(CommandMessage &message)
     }
 }
 
-// void MessageHandler::nickChangeHandler(CommandMessage &message)
-// {
-// 	ClientUser &sender = message.getMessageSender();
-// 	std::string nickname = message.getCommandArgument("nickname");
-// 	if (context.checkUserNicknameExist(nickname) == true)
-// 	{
-// 		sender.userBroadcast(rpl_msg::errNicknameInUse(sender, nickname));
-// 		return ;
-// 	}
-// 	try
-// 	{
-// 		bool user_is_already_registered = sender.confirmFullyRegistered();
-// 		std::string old_id = sender.getIdentifier();
-// 		sender.setNickname(nickname);
-// 		if (user_is_already_registered)
-// 		{
-// 			sender.userBroadcast(rpl_msg::confirmation(old_id, message));
-// 		}
-// 		else
-// 		{
-// 			greetNewUser(sender);
-// 		}
-// 	}
-// 	catch (ClientUser::InvalidNicknameException &e)
-// 	{
-// 		sender.userBroadcast(rpl_msg::errErroneousNickname(sender, nickname));
-// 	}
-// 	catch (ClientUser::NicknameTooLongException &e)
-// 	{
-// 		sender.userBroadcast(rpl_msg::errNicknameTooLong(sender, nickname));
-// 	}
-// }
 
 void MessageHandler::partCommandHandler(CommandMessage &message)
 {
@@ -834,36 +802,6 @@ void MessageHandler::summonCommandHandler(CommandMessage &message)
 	sender.userBroadcast(rpl_msg::errSummonDisabled(sender));
 }
 
-// void MessageHandler::userCommandHandler(CommandMessage &message)
-// {
-
-// 	ClientUser &sender = message.getMessageSender();
-// 	if (sender.confirmFullyRegistered())
-// 	{
-// 		sender.userBroadcast(rpl_msg::errAlreadyRegistered(sender));
-// 		return ;
-// 	}
-// 	else if (sender.checkAllUserDetails())
-// 	{
-// 		sender.userBroadcast(rpl_msg::errNotRegistered(sender));
-// 		return;
-// 	}
-// 	try
-// 	{
-// 		sender.setUsername(message.getCommandArgument("user"));
-// 		sender.setHostname(message.getCommandArgument("unused"));
-// 		sender.setRealname(message.getCommandArgument("realname"));
-// 		greetNewUser(sender);
-// 	}
-// 	catch (ClientUser::InvalidUsernameException &e)
-// 	{
-// 		sender.userBroadcast(rpl_msg::errInvalidUsername());
-// 	}
-// 	catch (std::exception &e)
-// 	{
-// 		logActionUtils::warn("MessageHandler: USER:", e.what());
-// 	}
-// }
 
 void MessageHandler::usersCommandHandler(CommandMessage &message)
 {

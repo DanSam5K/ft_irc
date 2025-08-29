@@ -1,5 +1,6 @@
 #include "utils_logger.hpp"
 
+// Logs informational messages if the logger level allows it
 void logActionUtils::info(std::string msg)
 {
 	if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_INFO)
@@ -12,6 +13,7 @@ void logActionUtils::info(std::string msg)
 	std::cerr << ss.str() << std::endl;
 }
 
+// Logs warning messages if the logger level allows it
 void logActionUtils::warn(std::string msg)
 {
 	if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_WARNING)
@@ -24,19 +26,21 @@ void logActionUtils::warn(std::string msg)
 	std::cerr << ss.str() << std::endl;
 }
 
+// Logs warning messages with an associated command string
 void logActionUtils::warn(std::string msg, std::string command)
 {
 	if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_WARNING)
 	{
 		return ;
 	}
-	std::string formatted_command = get_formatted_command(command);
+	std::string formatted_command = getFormattedCommand(command);
 
 	std::stringstream ss;
 	ss << ANSI_FG_YELLOW "[WARN] " << msg << ": [" << formatted_command << "]" << ANSI_RESET;
 	std::cerr << ss.str() << std::endl;
 }
 
+// Logs error messages if the logger level allows it
 void logActionUtils::error(std::string msg)
 {
 	if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_ERROR)
@@ -49,25 +53,28 @@ void logActionUtils::error(std::string msg)
 	std::cerr << ss.str() << std::endl;
 }
 
+// Logs a reply message sent to a specific socket
 void logActionUtils::reply(int socket, std::string reply)
 {
 	std::stringstream ss;
-	std::string formatted_reply = get_formatted_command(reply);
+	std::string formatted_reply = getFormattedCommand(reply);
 
 
 	ss << ANSI_FG_CYAN "[REPLY][Socket " << socket << "]: [" << formatted_reply << "]" << ANSI_RESET;
 	std::cerr << ss.str() << std::endl;
 }
 
+// Logs a command message received from a specific socket
 void logActionUtils::command(int socket, std::string command)
 {
-	std::string formatted_command = get_formatted_command(command);
+	std::string formatted_command = getFormattedCommand(command);
 	std::stringstream ss;
 	ss << ANSI_FG_MAGENTA "[COMMAND][Socket " << socket << "]: [" << formatted_command << "]" << ANSI_RESET;
 	std::cerr << ss.str() << std::endl;
 }
 
-std::string logActionUtils::get_formatted_command(std::string command)
+// Formats a command string by escaping special characters for logging
+std::string logActionUtils::getFormattedCommand(std::string command)
 {
 	std::stringstream ss;
 
