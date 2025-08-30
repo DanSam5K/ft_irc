@@ -54,7 +54,7 @@ class Channel
 		std::string const &getChannelName() const; // Get the channel name
 		std::string getModeString() const; // Get the channel mode as a string
 		std::string getUserListString(); // Get the list of users in the channel as a string
-		unsigned int getUserCount(); // Get the number of users in the channel
+		unsigned int getUserCount() const; // Get the number of users in the channel
 		std::list<ClientUser *> getUserList(); // Get the list of users in the channel
 
 		// Modifiers
@@ -104,9 +104,9 @@ class Channel
 		bool checkChannelCreatorByUser(ClientUser &user) const; // Check if user is channel creator
 		bool checkChannelOperatorByNickname(std::string nickname) const; // Check if nickname is channel operator
 		bool checkChannelCreatorByNickname(std::string nickname) const; // Check if nickname is channel creator
-		bool confirmInChannelByUser(ClientUser &user) const; // Confirm user is in channel
-		bool confirmInChannelByNickname(std::string nickname) const; // Confirm nickname is in channel
-		bool confirmChannelIsEmpty() const; // Confirm channel is empty
+		bool confirmInChannelByUser(ClientUser &user); // Confirm user is in channel
+		bool confirmInChannelByNickname(std::string nickname); // Confirm nickname is in channel
+		bool confirmChannelIsEmpty(); // Confirm channel is empty
 
 		void broadcast(std::string message); // Broadcast message to all users
 		void broadcastExcept(std::string message, ClientUser &excludedUser); // Broadcast message to all users except excludedUser
