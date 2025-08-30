@@ -1,11 +1,16 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						         error_reply.hpp  	 					     #
+#****************************************************************************/
+
 #ifndef ERROR_REPLY_HPP
 # define ERROR_REPLY_HPP
 
 /* NOTE: These codes are from the official rfc2812 documentation : */
 /* https://www.rfc-editor.org/rfc/rfc2812#section-5 */
-
 /* NOTE: These numeric error replies might not all be implemented in ft_irc. */
-
 /* Error replies are found in the range from 400 to 599. */
 
 # define ERR_NOSUCHNICK "401"

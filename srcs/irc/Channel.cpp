@@ -1,3 +1,10 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						            Channel.cpp 	 					     #
+#****************************************************************************/
+
 #include "Channel.hpp"
 #include "ConnectionManager.hpp"
 #include "PasswordManager.hpp"
@@ -37,17 +44,17 @@ Channel::Channel(std::string channelName,
 
 Channel::~Channel() {}
 
-void Channel::setTopicMessage(std::string new_topic)
+void Channel::setTopicMessage(std::string new_topic) // Set the topic message for the channel
 {
 	topicMessage = new_topic;
 }
 
-std::string Channel::getTopicMessage() const
+std::string Channel::getTopicMessage() const // Get the topic message for the channel
 {
 	return (topicMessage);
 }
 
-bool is_chan_name_valid(std::string channelName)
+bool is_chan_name_valid(std::string channelName) // Check if a channel name is valid
 {
 	if (channelName.length() > MAX_CHANNEL_NAME_LENGTH)
 	{
@@ -66,7 +73,7 @@ bool is_chan_name_valid(std::string channelName)
 	return (false);
 }
 
-void Channel::setChannelName(std::string channelName)
+void Channel::setChannelName(std::string channelName) // Set the channel name
 {
 	if (is_chan_name_valid(channelName) == true)
 	{
@@ -76,28 +83,28 @@ void Channel::setChannelName(std::string channelName)
 	throw InvalidChannelNameException();
 }
 
-std::string const &Channel::getChannelName() const
+std::string const &Channel::getChannelName() const // Get the channel name
 {
 	return (this->channelName);
 }
 
-void Channel::setChannelCreator(std::string nick)
+void Channel::setChannelCreator(std::string nick) // Set the channel creator
 {
 	this->creatorNickname = nick;
 	return ;
 }
 
-std::string const &Channel::getChannelCreator() const
+std::string const &Channel::getChannelCreator() const // Get the channel creator
 {
 	return (this->creatorNickname);
 }
 
-std::string const &Channel::getModeFlags() const
+std::string const &Channel::getModeFlags() const // Get the mode flags for the channel
 {
 	return (this->modeFlags);
 }
 
-void Channel::addUserToChannel(ClientUser &user)
+void Channel::addUserToChannel(ClientUser &user) // Add a user to the channel
 {
 	logActionUtils::info("Channel \"" + this->channelName + "\": Adding user \"" 
 						+ user.getNickname() + "\" to the channel");
@@ -112,7 +119,7 @@ void Channel::addUserToChannel(ClientUser &user)
 	}
 }
 
-void Channel::removeUserFromChannel(ClientUser &user)
+void Channel::removeUserFromChannel(ClientUser &user) // Remove a user from the channel
 {
 	logActionUtils::info("Channel \"" + this->channelName + "\": ClientUser \"" + 
 					 user.getNickname() + "\" has been removed");
@@ -131,7 +138,7 @@ void Channel::removeUserFromChannel(ClientUser &user)
 	}
 }
 
-void Channel::updateUserNickname(ClientUser &user, std::string new_nick)
+void Channel::updateUserNickname(ClientUser &user, std::string new_nick) // Update a user's nickname in the channel
 {
 	std::map<std::string, ClientUser *>::iterator it = usersRegistry.find(user.getNickname());
 	bool is_chan_creator = checkChannelCreatorByUser(user);
@@ -151,13 +158,13 @@ void Channel::updateUserNickname(ClientUser &user, std::string new_nick)
 	}
 }
 
-void Channel::configureModes(std::string modes_to_add, std::string modes_to_remove)
+void Channel::configureModes(std::string modes_to_add, std::string modes_to_remove) // Configure channel modes
 {
 	addModeFlags(modes_to_add);
 	removeModeFlags(modes_to_remove);
 }
 
-void Channel::addModeFlags(std::string mode_string)
+void Channel::addModeFlags(std::string mode_string) // Adds mode flags for the channel
 {
 	std::string::iterator it = mode_string.begin();
 	for (; it != mode_string.end(); it++)
@@ -170,7 +177,7 @@ void Channel::addModeFlags(std::string mode_string)
 	}
 }
 
-void Channel::removeModeFlags(std::string mode_string)
+void Channel::removeModeFlags(std::string mode_string) // Removes mode flags for the channel
 {
 	std::string::iterator it = mode_string.begin();
 	for (; it != mode_string.end(); it++)
@@ -184,7 +191,7 @@ void Channel::removeModeFlags(std::string mode_string)
 }
 
 
-bool Channel::confirmModePresence(char c)
+bool Channel::confirmModePresence(char c) const // Checks if a mode is present
 {
 	size_t pos = this->modeFlags.find(c, 0);
 	if (pos != std::string::npos)
@@ -194,28 +201,28 @@ bool Channel::confirmModePresence(char c)
 	return (false);
 }
 
-void Channel::promoteOperatorByUser(ClientUser &user)
+void Channel::promoteOperatorByUser(ClientUser &user) // Promote a user to operator status
 {
 	operatorList.insert(user.getNickname());
 }
 
-void Channel::demoteOperatorByUser(ClientUser &user)
+void Channel::demoteOperatorByUser(ClientUser &user) // Demote a user from operator status
 {
 	operatorList.erase(user.getNickname());
 }
 
-void Channel::demoteOperatorByNickname(std::string nick)
+void Channel::demoteOperatorByNickname(std::string nick) // Demote a user from operator status by nickname
 {
 	operatorList.erase(nick);
 }
 
 
-bool Channel::checkChannelOperatorByUser(ClientUser &user)
+bool Channel::checkChannelOperatorByUser(ClientUser &user) const // Check if a user is an operator in the channel
 {
 	return (operatorList.count(user.getNickname()) || checkChannelCreatorByUser(user));
 }
 
-bool Channel::checkChannelCreatorByUser(ClientUser &user)
+bool Channel::checkChannelCreatorByUser(ClientUser &user) const // Check if a user is the creator of the channel
 {
 	if (user.getNickname() == this->creatorNickname)
 	{
@@ -224,17 +231,17 @@ bool Channel::checkChannelCreatorByUser(ClientUser &user)
 	return (false);
 }
 
-void Channel::promoteOperatorByNickname(std::string nickname)
+void Channel::promoteOperatorByNickname(std::string nickname) // Promote a user to operator status by nickname
 {
 	operatorList.insert(nickname);
 }
 
-void Channel::inviteUser(std::string nick)
+void Channel::inviteUser(std::string nick) // Invite a user to the channel
 {
 	guestUserNicknames.insert(nick);
 }
 
-void Channel::revokeInvite(std::string nick)
+void Channel::revokeInvite(std::string nick) // Revoke a user's invitation to the channel
 {
 	guestUserNicknames.erase(nick);
 }
@@ -244,12 +251,12 @@ void Channel::clearInvites()
 	guestUserNicknames.clear();
 }
 
-bool Channel::checkChannelOperatorByNickname(std::string nickname)
+bool Channel::checkChannelOperatorByNickname(std::string nickname) const // Check if a user is an operator in the channel by nickname
 {
 	return (operatorList.count(nickname) || checkChannelCreatorByNickname(nickname));
 }
 
-bool Channel::checkChannelCreatorByNickname(std::string nickname)
+bool Channel::checkChannelCreatorByNickname(std::string nickname) const // Check if a user is the creator of the channel by nickname
 {
 	if (nickname == this->creatorNickname)
 	{
@@ -258,7 +265,7 @@ bool Channel::checkChannelCreatorByNickname(std::string nickname)
 	return (false);
 }
 
-void Channel::broadcast(std::string message)
+void Channel::broadcast(std::string message) // Broadcast a message to all users in the channel
 {
 	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
 	for (; it != usersRegistry.end(); it++)
@@ -267,7 +274,7 @@ void Channel::broadcast(std::string message)
 	}
 }
 
-void Channel::broadcastExcept(std::string message, ClientUser &excludedUser)
+void Channel::broadcastExcept(std::string message, ClientUser &excludedUser) // Broadcast a message to all users except the excluded user
 {
 	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
 	for (; it != usersRegistry.end(); it++)
@@ -279,7 +286,7 @@ void Channel::broadcastExcept(std::string message, ClientUser &excludedUser)
 	}
 }
 
-bool Channel::confirmInChannelByNickname(std::string nickname)
+bool Channel::confirmInChannelByNickname(std::string nickname) // Check if a user is in the channel by nickname
 {
 	std::map<std::string, ClientUser *>::iterator it = usersRegistry.find(nickname);
 	if (it != usersRegistry.end())
@@ -289,7 +296,7 @@ bool Channel::confirmInChannelByNickname(std::string nickname)
 	return (false);
 }
 
-bool Channel::confirmInChannelByUser(ClientUser &user)
+bool Channel::confirmInChannelByUser(ClientUser &user) // Check if a user is in the channel by user object
 {
 	std::map<std::string, ClientUser *>::iterator it = usersRegistry.find(user.getNickname());
 	if (it != usersRegistry.end())
@@ -299,7 +306,7 @@ bool Channel::confirmInChannelByUser(ClientUser &user)
 	return (false);
 }
 
-bool Channel::confirmChannelIsEmpty()
+bool Channel::confirmChannelIsEmpty() // Check if the channel is empty
 {
 	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
 	if (it == usersRegistry.end())
@@ -309,7 +316,7 @@ bool Channel::confirmChannelIsEmpty()
 	return (false);
 }
 
-std::list<ClientUser *> Channel::getUserList()
+std::list<ClientUser *> Channel::getUserList() // Get the list of users in the channel
 {
 	std::list<ClientUser *> user_list;
 	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
@@ -320,13 +327,13 @@ std::list<ClientUser *> Channel::getUserList()
 	return (user_list);
 }
 
-unsigned int Channel::getUserCount()
+unsigned int Channel::getUserCount() const // Get the count of users in the channel
 {
 	return (usersRegistry.size());
 }
 
 
-std::string Channel::getUserListString()
+std::string Channel::getUserListString() // Get the list of users in the channel as a string
 {
 	std::string user_list;
 	std::map<std::string, ClientUser *>::iterator it = usersRegistry.begin();
@@ -345,44 +352,44 @@ std::string Channel::getUserListString()
 	return (user_list);
 }
 
-void Channel::setTopicLock(bool enabled)
+void Channel::setTopicLock(bool enabled) // Lock or unlock the topic
 {
 	blockedTopic = enabled;
 }
 
-bool Channel::checkTopicRestricted() const
+bool Channel::checkTopicRestricted() const // Check if the topic is locked
 {
 	return blockedTopic;
 }
 
-void Channel::setInviteOnly(bool enabled)
+void Channel::setInviteOnly(bool enabled) // Set the channel to invite-only mode
 {
 	guestUsersOnly = enabled;
 }
 
-bool Channel::checkInviteToChannelOnly() const
+bool Channel::checkInviteToChannelOnly() const // Check if the channel is invite-only
 {
 	return guestUsersOnly;
 }
 
-void Channel::setPassword(std::string password)
+void Channel::setPassword(std::string password) // Set the channel password
 {
 	channelPassword = passwordHandler.generateHash(password);
 	passwordEnabled = true;
 }
 
-void Channel::removePassword()
+void Channel::removePassword() // Remove the channel password
 {
 	channelPassword = "";
 	passwordEnabled = false;
 }
 
-bool Channel::checkPasswordProtection() const
+bool Channel::checkPasswordProtection() const // Check if the channel is password protected
 {
 	return passwordEnabled;
 }
 
-bool Channel::checkPassword(std::string password) const
+bool Channel::checkPassword(std::string password) const // Check if the provided password is correct
 {
 	if (!passwordEnabled)
 	{
@@ -399,23 +406,23 @@ bool Channel::checkPassword(std::string password) const
 	}
 }
 
-void Channel::setUserLimit(int limit)
+void Channel::setUserLimit(int limit) // Set the maximum number of users in the channel
 {
 	maximumUsers = limit;
 	usersLimitEnabled = true;
 }
 
-void Channel::removeUserRestriction()
+void Channel::removeUserRestriction() // Remove the user limit restriction
 {
 	usersLimitEnabled = false;
 }
 
-bool Channel::checkUserRestriction() const
+bool Channel::checkUserRestriction() const // Check if the user limit is enabled
 {
 	return usersLimitEnabled;
 }
 
-bool Channel::checkRestrictionPoint() const
+bool Channel::checkRestrictionPoint() const // Check if the channel has reached its user limit
 {
 	if (usersLimitEnabled && usersRegistry.size() >= maximumUsers)
 	{
@@ -424,28 +431,27 @@ bool Channel::checkRestrictionPoint() const
 	return (false);
 }
 
-
-bool Channel::checkInvitedByUser(ClientUser &user) const
+bool Channel::checkInvitedByUser(ClientUser &user) const // Check if the user is invited
 {
 	return guestUserNicknames.count(user.getNickname());
 }
 
-bool Channel::checkInvitedByNickname(std::string nickname) const
+bool Channel::checkInvitedByNickname(std::string nickname) const // Check if the user is invited by nickname
 {
 	return guestUserNicknames.count(nickname);
 }
 
-const char* Channel::AlreadyInChannelException::what() const throw()
+const char* Channel::AlreadyInChannelException::what() const throw() // Exception for already in channel
 {
 	return ("ClientUser is already a member of the channel.");
 }
 
-const char* Channel::InvalidChannelNameException::what() const throw()
+const char* Channel::InvalidChannelNameException::what() const throw() // Exception for invalid channel name
 {
 	return ("ChannelName is not a recognized channel");
 }
 
-std::string Channel::getModeString() const
+std::string Channel::getModeString() const // Get the channel mode as a string
 {
 	std::string rawModeString = "+";
 
@@ -468,7 +474,7 @@ std::string Channel::getModeString() const
 	return rawModeString;
 }
 
-void Channel::transferOperatorToNextUser()
+void Channel::transferOperatorToNextUser() // Transfer operator status to the next user
 {
 	if (usersRegistry.empty())
 	{

@@ -6,19 +6,14 @@
 #****************************************************************************/
 
 #ifndef APPLICATION_HPP
-#define APPLICATION_HPP
+# define APPLICATION_HPP
 
 #include "ConnectionManager.hpp"
 #include "ft_irc.hpp"
 #include "PasswordManager.hpp"
-#include "utils_logger.hpp"
-#include "utils_signal_manager.hpp"
 #include <csignal>
-#include <exception>
-#include <fcntl.h>
 #include <errno.h>
 #include <sys/poll.h>
-#include <vector>
 
 // Represents basic socket information (file descriptor and address)
 struct SocketInfo {

@@ -1,9 +1,15 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						     		main.cpp	 	 					     #
+#****************************************************************************/
+
 #include "PasswordManager.hpp"
-// #include "test.hpp"
 #include "ft_irc.hpp"
 #include "Application.hpp"
 
-int main(int ac, char **av)
+int main(int ac, char **av) // Takes as arguments the port and password
 {
 	if (ac != 3)
 	{

@@ -1,3 +1,10 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						     MessageHandler.cpp 	 					     #
+#****************************************************************************/
+
 #include "MessageHandler.hpp"
 #include "ModeHandler.hpp"
 #include "ModeParser.hpp"
@@ -58,37 +65,6 @@ void MessageHandler::processClientCommand(ClientUser &sender, const std::string 
         delete message;
 }
 
-// void MessageHandler::processClientCommand(ClientUser &sender, const std::string &rawMessage)
-// {
-// 	CommandMessage *message = NULL;
-
-// 	try
-// 	{
-// 		message = buildCommandMessage(sender, rawMessage);
-// 		checkMessageValidity(sender, *message);
-// 		if (checkMessageEligibility(sender, *message))
-// 		{
-// 			handler function = handle[message->getCommandMessage()];
-// 			(*this.*function)(*message);
-// 		}
-// 		else
-// 		{
-// 			sender.userBroadcast(rpl_msg::errNotRegistered(sender));
-// 		}
-// 		delete (message);
-// 	}
-// 	catch (std::exception &e)
-// 	{
-// 		logActionUtils::warn("CommandMessage Handler: CommandMessage creation error: ", e.what());
-// 		logActionUtils::warn("--> CommandMessage was", rawMessage);
-// 		if (message != NULL)
-// 		{
-// 			delete (message);
-// 		}
-// 		return ;
-// 	}
-// }
-
 CommandMessage *MessageHandler::buildCommandMessage(ClientUser &sender,
         std::string rawMessage)
 {
@@ -109,7 +85,7 @@ CommandMessage *MessageHandler::buildCommandMessage(ClientUser &sender,
 	return (message);
 }
 
-void MessageHandler::checkMessageValidity(ClientUser &sender, CommandMessage &message)
+void MessageHandler::checkMessageValidity(ClientUser &sender, CommandMessage &message) // Check the validity of the command message
 {
 	try
 	{
@@ -161,29 +137,6 @@ bool MessageHandler::checkMessageEligibility(ClientUser &sender, CommandMessage 
     return false;
 }
 
-
-// bool MessageHandler::checkMessageEligibility(ClientUser &sender, CommandMessage &message)
-// {
-// 	std::string command = message.getCommandMessage();
-// 	if (sender.confirmFullyRegistered() == true)
-// 	{
-// 		return (true);
-// 	}
-// 	else if (sender.passwordEnabled() == true
-// 	          && (command == "USER" || command == "NICK" || command == "CAP"
-// 	               || command == "PASS" || command == "QUIT"))
-// 	{
-// 		return (true);
-// 	}
-// 	else if (sender.passwordEnabled() == false
-// 	          && (command == "CAP" || command == "PASS" || command == "QUIT"))
-// 	{
-// 		return (true);
-// 	}
-// 	return (false);
-// }
-
-
 // Registers all supported IRC command handlers by mapping command names to their handler functions.
 void MessageHandler::configureMessageHandlers()
 {
@@ -210,7 +163,7 @@ void MessageHandler::configureMessageHandlers()
 	handle.insert(handlerPair("PONG", &MessageHandler::pongCommandHandler));
 }
 
-void MessageHandler::adminCommandHandler(CommandMessage &message)
+void MessageHandler::adminCommandHandler(CommandMessage &message) // Handle ADMIN command
 {
 	ClientUser &sender = message.getMessageSender();
 	if (message.checkCommandArgument("modeTarget") && message.getCommandArgument("modeTarget") != SERVER_NAME)
@@ -224,7 +177,7 @@ void MessageHandler::adminCommandHandler(CommandMessage &message)
 	sender.userBroadcast(rpl_msg::adminEmail(sender));
 }
 
-void MessageHandler::inviteCommandHandler(CommandMessage &message)
+void MessageHandler::inviteCommandHandler(CommandMessage &message) // Handle INVITE command
 {
 	// TODO: no problem if no such channel
 	ClientUser &sender = message.getMessageSender();
@@ -265,7 +218,7 @@ void MessageHandler::inviteCommandHandler(CommandMessage &message)
 	channel.inviteUser(user_nickname);
 }
 
-void MessageHandler::topicCommandHandler(CommandMessage &message)
+void MessageHandler::topicCommandHandler(CommandMessage &message) // Handle TOPIC command
 {
 	ClientUser &sender = message.getMessageSender();
 	std::string channelName = message.getCommandArgument("channel");
@@ -304,13 +257,13 @@ void MessageHandler::topicCommandHandler(CommandMessage &message)
 	channel.broadcast(rpl_msg::newTopic(sender, message));
 }
 
-void MessageHandler::capRequestHandler(CommandMessage &message)
+void MessageHandler::capRequestHandler(CommandMessage &message) // Handle CAP command
 {
 	(void)message;
 	return ;
 }
 
-void MessageHandler::infoCommandHandler(CommandMessage &message)
+void MessageHandler::infoCommandHandler(CommandMessage &message) // Handle INFO command
 {
 	ClientUser &sender = message.getMessageSender();
 	if (message.checkCommandArgument("modeTarget") && message.getCommandArgument("modeTarget") != SERVER_NAME)
@@ -324,7 +277,7 @@ void MessageHandler::infoCommandHandler(CommandMessage &message)
 	sender.userBroadcast(rpl_msg::infoEnd(sender));
 }
 
-void MessageHandler::joinCommandHandler(CommandMessage &message)
+void MessageHandler::joinCommandHandler(CommandMessage &message) // Handle JOIN command
 {
 	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> chan_names = message.getCommandArgumentList("channel");
@@ -413,7 +366,7 @@ void MessageHandler::joinCommandHandler(CommandMessage &message)
 	}
 }
 
-void MessageHandler::kickCommandHandler(CommandMessage &message)
+void MessageHandler::kickCommandHandler(CommandMessage &message) // Handle KICK command
 {
 	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> channels = message.getCommandArgumentList("channel");
@@ -526,7 +479,7 @@ void MessageHandler::kickCommandHandler(CommandMessage &message)
 	}
 }
 
-void MessageHandler::listCommandHandler(CommandMessage &message)
+void MessageHandler::listCommandHandler(CommandMessage &message) // Handle LIST command
 {
 	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> channels;
@@ -553,7 +506,7 @@ void MessageHandler::listCommandHandler(CommandMessage &message)
 	sender.userBroadcast(rpl_msg::listEnd(sender));
 }
 
-void MessageHandler::modeCommandHandler(CommandMessage &message)
+void MessageHandler::modeCommandHandler(CommandMessage &message) // Handle MODE command
 {
 
 	ClientUser &sender = message.getMessageSender();
@@ -562,7 +515,7 @@ void MessageHandler::modeCommandHandler(CommandMessage &message)
 	return;
 }
 
-void MessageHandler::namesCommandHandler(CommandMessage &message)
+void MessageHandler::namesCommandHandler(CommandMessage &message) // Handle NAMES command
 {
 	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> chan_names;
@@ -605,7 +558,7 @@ void MessageHandler::namesCommandHandler(CommandMessage &message)
 	}
 }
 
-void MessageHandler::nickChangeHandler(CommandMessage &message)
+void MessageHandler::nickChangeHandler(CommandMessage &message) // Handle NICK command
 {
     ClientUser &sender = message.getMessageSender();
     std::string nickname = message.getCommandArgument("nickname");
@@ -638,7 +591,7 @@ void MessageHandler::nickChangeHandler(CommandMessage &message)
 }
 
 
-void MessageHandler::partCommandHandler(CommandMessage &message)
+void MessageHandler::partCommandHandler(CommandMessage &message) // Handle PART command
 {
 	ClientUser &sender = message.getMessageSender();
 	std::list<std::string> chan_names = message.getCommandArgumentList("channel");
@@ -673,7 +626,7 @@ void MessageHandler::partCommandHandler(CommandMessage &message)
 	}
 }
 
-void MessageHandler::passCommandHandler(CommandMessage &message)
+void MessageHandler::passCommandHandler(CommandMessage &message) // Handle PASS command
 {
 	ClientUser &sender = message.getMessageSender();
 
@@ -703,7 +656,7 @@ void MessageHandler::passCommandHandler(CommandMessage &message)
 	}
 }
 
-void MessageHandler::privateMessageHandler(CommandMessage &message)
+void MessageHandler::privateMessageHandler(CommandMessage &message) // Handle PRIVMSG command
 {
 	ClientUser &sender = message.getMessageSender();
 	std::string toNickname = message.getCommandArgument("msgtarget");
@@ -740,7 +693,7 @@ void MessageHandler::privateMessageHandler(CommandMessage &message)
 	}
 }
 
-void MessageHandler::quitCommandHandler(CommandMessage &message)
+void MessageHandler::quitCommandHandler(CommandMessage &message) // Handle QUIT command
 {
 	ClientUser &sender = message.getMessageSender();
 	if (context.checkUserInAnyChannel(sender) == true)
@@ -758,7 +711,7 @@ void MessageHandler::quitCommandHandler(CommandMessage &message)
 }
 
 
-void MessageHandler::userCommandHandler(CommandMessage &message)
+void MessageHandler::userCommandHandler(CommandMessage &message) // Handle USER command
 {
     ClientUser &sender = message.getMessageSender();
     if (sender.confirmFullyRegistered())
@@ -796,26 +749,26 @@ void MessageHandler::userCommandHandler(CommandMessage &message)
     }
 }
 
-void MessageHandler::summonCommandHandler(CommandMessage &message)
+void MessageHandler::summonCommandHandler(CommandMessage &message) // Handle SUMMON command
 {
 	ClientUser &sender = message.getMessageSender();
 	sender.userBroadcast(rpl_msg::errSummonDisabled(sender));
 }
 
 
-void MessageHandler::usersCommandHandler(CommandMessage &message)
+void MessageHandler::usersCommandHandler(CommandMessage &message) // Handle USERS command
 {
 	ClientUser &sender = message.getMessageSender();
 	sender.userBroadcast(rpl_msg::errUsersDisabled(sender));
 }
 
-void MessageHandler::versionRequestHandler(CommandMessage &message)
+void MessageHandler::versionRequestHandler(CommandMessage &message) // Handle VERSION command
 {
 	ClientUser &sender = message.getMessageSender();
 	sender.userBroadcast(rpl_msg::serverVersion(sender));
 }
 
-void MessageHandler::greetNewUser(ClientUser &user)
+void MessageHandler::greetNewUser(ClientUser &user) // Greet new user
 {
 	if (user.confirmNicknameExist() == false || user.checkAllUserDetails() == false)
 	{
@@ -835,7 +788,7 @@ void MessageHandler::greetNewUser(ClientUser &user)
 	}
 }
 
-void MessageHandler::pingCommandHandler(CommandMessage &message)
+void MessageHandler::pingCommandHandler(CommandMessage &message) // Handle PING command
 {
 	ClientUser &sender = message.getMessageSender();
 
@@ -861,7 +814,7 @@ void MessageHandler::pingCommandHandler(CommandMessage &message)
 	}
 }
 
-void MessageHandler::pongCommandHandler(CommandMessage &message)
+void MessageHandler::pongCommandHandler(CommandMessage &message) // Handle PONG command
 {
 	// Dummy To be implemented
 	(void) message;

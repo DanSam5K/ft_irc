@@ -1,19 +1,26 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						         ModeParser.hpp    	 					     #
+#****************************************************************************/
+
 #ifndef MODE_PARSER_HPP
-#define MODE_PARSER_HPP
+# define MODE_PARSER_HPP
 
 #include "ft_irc.hpp"
 
 // Represents the current state while parsing a mode string (waiting for sign or mode character)
 enum ModeParsingState
 {
-    AWAITING_SIGN,         // Waiting for '+' or '-' sign
-    EXPECTING_MODE_CHAR    // Expecting a mode character after sign
+    AWAITING_SIGN,         // Waiting for '+' or '-' sign (to know if we're adding or removing a mode)
+    EXPECTING_MODE_CHAR    // Expecting a mode character after sign (to know which mode to change)
 };
 
 // Indicates whether a mode is being added or removed
 enum ModeChangeType {
-    ADD_MODE,              // Adding a mode flag
-    REMOVE_MODE            // Removing a mode flag
+    ADD_MODE,              // Adding a mode flag (to a user or channel)
+    REMOVE_MODE            // Removing a mode flag (from a user or channel)
 };
 
 // Parses IRC mode strings and separates added/removed mode flags
@@ -60,46 +67,3 @@ class ModeParser
 };
 
 #endif
-
-// // // Represents the current parsing modeParsingState in a rawModeString (expecting '+'/'-' or a mode character)
-// enum ModeParsingState
-// {
-// 		AWAITING_SIGN,
-// 		EXPECTING_MODE_CHAR
-// };
-	
-// // // Represents the ModeChangeType of mode change: adding or removing a mode
-// enum ModeChangeType {
-// 	ADD_MODE, 
-// 	REMOVE_MODE
-// };
-
-// class ModeParser
-// {
-// 	private:
-// 		std::string rawModeString;
-
-// 		ModeParsingState parseState;
-// 		ModeChangeType modeTargetType;
-// 		std::string addedModeFlags;
-// 		std::string removedModeFlags;
-
-// 		unsigned int currentIndex;
-
-// 		char getCurrentChar();
-// 		void parseModeFlag();
-// 		void parsePrefixSign();
-
-// 	public:
-// 		ModeParser(std::string rawModeString);
-// 		virtual ~ModeParser();
-
-// 		void parse();
-// 		std::string getAddedModeFlags();
-// 		std::string getRemovedModeFlags();
-// 		void shiftArguments();
-
-// 		class InvalidModestringException : public std::exception {};
-// };
-
-// #endif

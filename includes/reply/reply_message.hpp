@@ -1,3 +1,10 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						         reply_message.hpp 	 					     #
+#****************************************************************************/
+
 #ifndef REPLY_HPP
 #define REPLY_HPP
 
@@ -8,7 +15,7 @@
 #include "CommandMessage.hpp"
 #include "Channel.hpp"
 
-namespace rpl_msg
+namespace rpl_msg // to facilitate reply message creation
 {
     // ---- Server greeting & info ----
     std::string const welcome(ClientUser &user);
@@ -44,14 +51,12 @@ namespace rpl_msg
 
     // ---- Error messages ----
     std::string const errNoSuchNick(ClientUser &user, std::string nameOrChannel);
-    // std::string const errNoSuchNick(ClientUser &user, std::string nameOrChannel);
     std::string const errNoSuchServer(ClientUser &user, std::string serverName);
     std::string const errNoSuchChannel(ClientUser &user, std::string channelName);
     std::string const errCannotSendToChan(ClientUser &user, std::string channelName);
     std::string const errTooManyChannels(ClientUser &user, std::string channelName);
     std::string const errWasNoSuchNick(ClientUser &user, std::string nickname);
     std::string const errTooManyTargets(ClientUser &user, std::string modeTarget, int error_code, std::string abortMessage);
-    
     std::string const errNoSuchService(ClientUser &user, std::string service_name);
     std::string const errNoOrigin(ClientUser &user);
     std::string const errNoRecipient(ClientUser &user, std::string command);
@@ -65,14 +70,12 @@ namespace rpl_msg
     std::string const errFileError(ClientUser &user, std::string file_operation, std::string filename);
     std::string const errNoNicknameGiven(ClientUser &user);
     std::string const errErroneousNickname(ClientUser &user, std::string nickname);
-    // std::string const errErroneousUsername(ClientUser &user, std::string username);
     std::string const errNicknameTooLong(ClientUser &user, std::string nickname);
     std::string const errNicknameInUse(ClientUser &user, std::string nickname);
     std::string const errUnavailResource(ClientUser &user, std::string nickname_or_channel);
     std::string const errUserNotInChannel(ClientUser &user, std::string nickname, std::string channel);
     std::string const errNotOnChannel(ClientUser &user, std::string channel);
     std::string const errUserOnChannel(ClientUser &user, std::string username, std::string channel);
-
     std::string const errNoLogin(ClientUser &user);
     std::string const errSummonDisabled(ClientUser &user);
     std::string const errUsersDisabled(ClientUser &user);
@@ -87,14 +90,12 @@ namespace rpl_msg
     std::string const errKeyset(ClientUser &user, std::string channel);
     std::string const errChanneListFull(ClientUser &user, std::string channel);
     std::string const errUnknownMode(ClientUser &user, std::string channel, char modechar);
-
     std::string const errInviteOnlyChannel(ClientUser &user, std::string channel);
     std::string const errBannedFromchannel(ClientUser &user, std::string channel);
     std::string const errBadChannelKey(ClientUser &user, std::string channel);
     std::string const errBadChannelMask(ClientUser &user, std::string channel);
     std::string const errNoChannelModes(ClientUser &user, std::string channel);
     std::string const errBanListFull(ClientUser &user, std::string channel, std::string modechar);
-
     std::string const errNoPrivileges(ClientUser &user);
     std::string const errChanOprivsNeeded(ClientUser &user, std::string channel);
     std::string const errCantKillServer(ClientUser &user);

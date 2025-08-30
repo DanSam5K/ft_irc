@@ -1,3 +1,10 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  							     ModeHandler.cpp 	 					     #
+#****************************************************************************/
+
 #include "MessageHandler.hpp"
 #include "ModeHandler.hpp"
 #include "CommandMessage.hpp"
@@ -13,11 +20,11 @@
 #include <stdexcept>
 #include <string>
 
+// constructor does initialization, and also sets up modeTarget, targetType, and targetChannel.
 ModeHandler::ModeHandler(ConnectionManager &context, ClientUser &sender,
                             CommandMessage &message) : context(context), sender(sender), message(message)
 {
 	modeTarget = message.getCommandArgument("modeTarget");
-
 
 	handlers['i'][TARGET_USER]["+"] = &ModeHandler::invisibleUserEnableHandler;
 	handlers['i'][TARGET_USER]["-"] = &ModeHandler::invisibleUserDisableHandler;
@@ -59,7 +66,7 @@ ModeHandler::ModeHandler(ConnectionManager &context, ClientUser &sender,
 
 ModeHandler::~ModeHandler() {}
 
-std::string ModeHandler::currentArguments()
+std::string ModeHandler::currentArguments() // Get current mode arguments
 {
 	std::string current_argument;
 	if (modeArguments.size() == 0)
@@ -71,7 +78,7 @@ std::string ModeHandler::currentArguments()
 	return current_argument;
 }
 
-bool ModeHandler::determineTargetType()
+bool ModeHandler::determineTargetType() // Determine the target type (user or channel)
 {
 
 	if (confirmChannel(modeTarget))
@@ -96,7 +103,7 @@ bool ModeHandler::determineTargetType()
 	return 0;
 }
 
-bool ModeHandler::containsInvalidModeString(std::string modes)
+bool ModeHandler::containsInvalidModeString(std::string modes) // Check for invalid mode strings
 {
 	for (unsigned int i = 0; i < modes.size(); i++)
 	{
@@ -108,7 +115,7 @@ bool ModeHandler::containsInvalidModeString(std::string modes)
 	return (false);
 }
 
-bool ModeHandler::containsInvalidModeChar(char modeChar)
+bool ModeHandler::containsInvalidModeChar(char modeChar) // Check for invalid mode characters
 {
 	if (!handlers.count(modeChar))
 	{
@@ -117,7 +124,7 @@ bool ModeHandler::containsInvalidModeChar(char modeChar)
 	return (false);
 }
 
-std::string ModeHandler::santizeModeString(std::string rawModeString)
+std::string ModeHandler::sanitizeModeString(std::string rawModeString) // Sanitize mode string
 {
 	std::string cleaned;
 
@@ -137,7 +144,7 @@ std::string ModeHandler::santizeModeString(std::string rawModeString)
 	return (cleaned);
 }
 
-bool ModeHandler::parseModeString()
+bool ModeHandler::parseModeString() // Parse the mode string
 {
 	std::string cleaned_added_modes;
 	std::string cleaned_removed_modes;
@@ -156,8 +163,8 @@ bool ModeHandler::parseModeString()
 	try
 	{
 		parser.parse();
-		addedModeFlags = santizeModeString(parser.getAddedModeFlags());
-		removedModeFlags = santizeModeString(parser.getRemovedModeFlags());
+		addedModeFlags = sanitizeModeString(parser.getAddedModeFlags());
+		removedModeFlags = sanitizeModeString(parser.getRemovedModeFlags());
 	}
 	catch (ModeParser::InvalidModestringException &e)
 	{
@@ -167,7 +174,7 @@ bool ModeHandler::parseModeString()
 	return 0;
 }
 
-void ModeHandler::extractArguments()
+void ModeHandler::extractArguments() // Extract mode arguments from the message
 {
 	if (message.checkCommandArgumentList("modeChar modeArguments"))
 	{
@@ -176,7 +183,7 @@ void ModeHandler::extractArguments()
 	}
 }
 
-void ModeHandler::executeModeChanges()
+void ModeHandler::executeModeChanges() // Execute mode changes
 {
 	std::string::iterator it = addedModeFlags.begin();
 	for (; it != addedModeFlags.end(); it++)
@@ -190,19 +197,19 @@ void ModeHandler::executeModeChanges()
 	}
 }
 
-void ModeHandler::invisibleUserEnableHandler()
+void ModeHandler::invisibleUserEnableHandler() // Enable invisible user mode
 {
 	// Compatibility with irssi
 	return;
 }
 
-void ModeHandler::invisibleUserDisableHandler()
+void ModeHandler::invisibleUserDisableHandler() // Disable invisible user mode
 {
 	// Compatibility with irssi
 	return;
 }
 
-void ModeHandler::inviteChannelEnableHandler()
+void ModeHandler::inviteChannelEnableHandler() // Enable invite-only mode for the channel
 {
 	if (!targetChannel->checkInviteToChannelOnly())
 	{
@@ -215,7 +222,7 @@ void ModeHandler::inviteChannelEnableHandler()
 	return;
 }
 
-void ModeHandler::inviteChannelDisableHandler()
+void ModeHandler::inviteChannelDisableHandler() // Disable invite-only mode for the channel
 {
 	if (targetChannel->checkInviteToChannelOnly())
 	{
@@ -227,7 +234,7 @@ void ModeHandler::inviteChannelDisableHandler()
 	return;
 }
 
-void ModeHandler::topicChannelEnableHandler()
+void ModeHandler::topicChannelEnableHandler() // Enable topic restriction for the channel
 {
 	if (!targetChannel->checkTopicRestricted())
 	{
@@ -239,7 +246,7 @@ void ModeHandler::topicChannelEnableHandler()
 	return;
 }
 
-void ModeHandler::topicChannelDisableHandler()
+void ModeHandler::topicChannelDisableHandler() // Disable topic restriction for the channel
 {
 	if (targetChannel->checkTopicRestricted())
 	{
@@ -251,7 +258,7 @@ void ModeHandler::topicChannelDisableHandler()
 	return;
 }
 
-void ModeHandler::keyChannelEnableHandler()
+void ModeHandler::keyChannelEnableHandler() // Enable key mode for the channel
 {
 	std::string argument;
 
@@ -277,7 +284,7 @@ void ModeHandler::keyChannelEnableHandler()
 	return;
 }
 
-void ModeHandler::keyChannelDisableHandler()
+void ModeHandler::keyChannelDisableHandler() // Disable key mode for the channel
 {
 	if (targetChannel->checkPasswordProtection())
 	{
@@ -289,14 +296,14 @@ void ModeHandler::keyChannelDisableHandler()
 	return;
 }
 
-void ModeHandler::operatorChannelEnableHandler()
+void ModeHandler::operatorChannelEnableHandler() // Enable channel operator mode
 {
 	std::string argument;
 	try
 	{
 		argument = currentArguments();
 		ClientUser &new_operator = context.getUserByNickname(
-		                          argument); // TODO: maybe specific response if exists
+		                          argument);
 		if (!targetChannel->confirmInChannelByUser(new_operator))
 		{
 			sender.userBroadcast(rpl_msg::errUserNotInChannel(sender,
@@ -321,7 +328,7 @@ void ModeHandler::operatorChannelEnableHandler()
 	}
 }
 
-void ModeHandler::operatorChannelDisableHandler()
+void ModeHandler::operatorChannelDisableHandler() // Disable channel operator mode
 {
 	std::string argument;
 	try
@@ -347,7 +354,7 @@ void ModeHandler::operatorChannelDisableHandler()
 	return;
 }
 
-bool isInt(const std::string&str)
+bool isInt(const std::string& str) // Check if a string is an integer
 {
 	int n;
 	std::istringstream istreamObject(str);
@@ -355,7 +362,7 @@ bool isInt(const std::string&str)
 	return istreamObject.eof() && !istreamObject.fail();
 }
 
-void ModeHandler::limitChannelUserEnableHandler()
+void ModeHandler::limitChannelUserEnableHandler() // Enable user limit mode for the channel
 {
 	std::string argument;
 	int limit;
@@ -382,7 +389,7 @@ void ModeHandler::limitChannelUserEnableHandler()
 	return;
 }
 
-void ModeHandler::limitChannelUserDisableHandler()
+void ModeHandler::limitChannelUserDisableHandler() // Disable user limit mode for the channel
 {
 	if (targetChannel->checkUserRestriction())
 	{

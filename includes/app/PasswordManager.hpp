@@ -1,5 +1,12 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						     PasswordManager.hpp	 					     #
+#****************************************************************************/
+
 #ifndef PASSWORD_MANAGER_HPP
-#define PASSWORD_MANAGER_HPP
+# define PASSWORD_MANAGER_HPP
 
 #include "ft_irc.hpp"
 
@@ -8,7 +15,7 @@
 
 class PasswordManager {
 private:
-	std::string hashedConnectionPassword;
+	std::string hashedConnectionPassword; // Hashed version of the connection password
 
 	// Internal: Generate SHA-256 hash from plain text
 	std::string computeSHA256(std::string passwordText);
@@ -35,36 +42,3 @@ public:
 };
 
 #endif
-
-
-
-// #ifndef PASSWORD_HPP
-// #define PASSWORD_HPP
-
-// #include "ft_irc.hpp"
-
-// /* The default connection password is 'password', the sha256 hash is: */
-// #define DEFAULT_CONNECTION_PASSWORD "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
-
-// class Password
-// {
-// 	private:
-// 		std::string connection_password_hash;
-// 		std::string create_sha256_hash(std::string plain_text);
-
-// 	public:
-// 		Password(std::string connection_password);
-// 		virtual ~Password();
-
-// 		std::string get_hash(std::string plain_text);
-// 		void validate_connection_password(std::string password);
-// 		void validate_password(std::string hash, std::string password);
-
-// 		class InvalidPasswordException : public std::exception
-// 		{
-// 			public:
-// 				virtual const char* what() const throw();
-// 		};
-// };
-
-// #endif

@@ -1,3 +1,10 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  							     RequestParser.cpp 	 					     #
+#****************************************************************************/
+
 #include "RequestParser.hpp"
 #include <algorithm>
 #include <cctype>
@@ -9,12 +16,15 @@
 
 #define NUMBER_CMD 24
 
+// Command list
 std::string commands[NUMBER_CMD] = {
 	"ADMIN", "INFO", "VERSION", "USERS", "NICK",
 	"PRIVMSG", "USER", "QUIT", "JOIN", "LIST", "NAMES",
 	"SUMMON", "KICK", "PART", "MODE", "CAP", "PASS",
 	"INVITE", "TOPIC", "PING", "PONG"
 };
+
+// Parameter list
 std::string params[NUMBER_CMD][10] = {
 	{"target"}, {"target"}, {}, {}, 
 	{"nickname"}, {"msgtarget", "text to be sent"},
@@ -30,6 +40,7 @@ std::string params[NUMBER_CMD][10] = {
 	{"token"}
 };
 
+// Argument types for each command's parameters
 ArgumentType params_states[NUMBER_CMD][10] = {
 	{OPTIONAL_ARG}, {OPTIONAL_ARG}, {}, {}, 
 	{REQUIRED}, {REQUIRED, OPTIONAL_ARG}, 
@@ -43,7 +54,7 @@ ArgumentType params_states[NUMBER_CMD][10] = {
 	{REQUIRED}, {REQUIRED}
 };
 
-
+// Constructor
 RequestParser::RequestParser(std::string rawInput) : tokenizer(InputTokenizer(
 	            rawInput)), currentIndex(0)
 {
@@ -58,7 +69,7 @@ RequestParser::RequestParser(std::string rawInput) : tokenizer(InputTokenizer(
 	shiftArguments();
 }
 
-void RequestParser::normalizeCommand(std::string &command)
+void RequestParser::normalizeCommand(std::string &command) // Normalize the command (uppercase)
 {
 	std::string::iterator it = command.begin();
 	for (; it != command.end(); it++)
@@ -67,7 +78,7 @@ void RequestParser::normalizeCommand(std::string &command)
 	}
 }
 
-void RequestParser::parse()
+void RequestParser::parse() // Parse the request
 {
 
 
@@ -89,79 +100,7 @@ void RequestParser::parse()
 	}
 }
 
-
-// void RequestParser::parse()
-// {
-//     // Tokenize the input string
-//     parsedTokens = tokenizer.getAllTokens();
-//     if (parsedTokens.empty())
-//         throw InvalidCommandException();
-
-//     // Normalize the command name (usually uppercase)
-//     command = parsedTokens[0];
-//     normalizeCommand(command);
-
-//     // USER command: expects username, mode, unused, realname
-//     if (command == "USER")
-//     {
-//         if (parsedTokens.size() >= 5)
-//         {
-//             parsedArguments["username"] = parsedTokens[1];
-//             parsedArguments["mode"] = parsedTokens[2];
-//             parsedArguments["unused"] = parsedTokens[3];
-//             std::string realname = parsedTokens[4];
-//             // Remove leading ':' from realname if present
-//             if (!realname.empty() && realname[0] == ':')
-//                 realname = realname.substr(1);
-//             parsedArguments["realname"] = realname;
-//         }
-//         else
-//         {
-//             throw MissingArgumentsException();
-//         }
-//         return;
-//     }
-
-//     // NICK command: expects nickname
-//     if (command == "NICK")
-//     {
-//         if (parsedTokens.size() >= 2)
-//             parsedArguments["nickname"] = parsedTokens[1];
-//         else
-//             throw MissingArgumentsException();
-//         return;
-//     }
-
-//     // PASS command: expects password
-//     if (command == "PASS")
-//     {
-//         if (parsedTokens.size() >= 2)
-//             parsedArguments["password"] = parsedTokens[1];
-//         else
-//             throw MissingArgumentsException();
-//         return;
-//     }
-
-//     // JOIN command: expects channel name(s)
-//     if (command == "JOIN")
-//     {
-//         if (parsedTokens.size() >= 2)
-//             argumentLists["channel"].push_back(parsedTokens[1]);
-//         else
-//             throw MissingArgumentsException();
-//         return;
-//     }
-
-//     // Add parsing for other commands as needed...
-
-//     // Default: store all tokens for generic access
-//     for (size_t i = 1; i < parsedTokens.size(); ++i)
-//     {
-//         argumentLists["args"].push_back(parsedTokens[i]);
-//     }
-// }
-
-void RequestParser::parseNone()
+void RequestParser::parseNone() // Parse the request with no specific command
 {
 	if (parsedTokens.size() > 1)
 	{
@@ -170,7 +109,7 @@ void RequestParser::parseNone()
 	return;
 }
 
-void RequestParser::parseAdvanced()
+void RequestParser::parseAdvanced() // Parse the request with advanced command
 {
 	unsigned int command_index = get_array_index(command, commands, NUMBER_CMD);
 	unsigned int i = 0;
@@ -194,7 +133,7 @@ void RequestParser::parseAdvanced()
 	}
 }
 
-std::string RequestParser::getCurrentToken()
+std::string RequestParser::getCurrentToken() // Get the current token
 {
 	if (currentIndex >= parsedTokens.size())
 	{
@@ -203,7 +142,7 @@ std::string RequestParser::getCurrentToken()
 	return (parsedTokens[currentIndex]);
 }
 
-bool RequestParser::setCurrentArgument(std::string argName)
+bool RequestParser::setCurrentArgument(std::string argName) // Set the current argument
 {
 	try
 	{
@@ -217,7 +156,7 @@ bool RequestParser::setCurrentArgument(std::string argName)
 	}
 }
 
-std::list<std::string> RequestParser::splitToList(std::string currentToken)
+std::list<std::string> RequestParser::splitToList(std::string currentToken) // Split the current token into a list
 {
 	std::list<std::string> args_list;
 
@@ -236,7 +175,7 @@ std::list<std::string> RequestParser::splitToList(std::string currentToken)
 	return args_list;
 }
 
-bool RequestParser::setCurrentArgument(std::string argName, ArgumentType argType)
+bool RequestParser::setCurrentArgument(std::string argName, ArgumentType argType) // Set the current argument
 {
 	try
 	{
@@ -265,7 +204,7 @@ bool RequestParser::setCurrentArgument(std::string argName, ArgumentType argType
 	return (true);
 }
 
-std::list<std::string> RequestParser::collectRemainingTokens(std::string currentToken)
+std::list<std::string> RequestParser::collectRemainingTokens(std::string currentToken) // Collect remaining tokens
 {
 	std::list<std::string> modeArguments;
 	std::string token;
@@ -289,7 +228,7 @@ std::list<std::string> RequestParser::collectRemainingTokens(std::string current
 	return modeArguments;
 }
 
-bool RequestParser::setCurrentArgumentList(std::string argName)
+bool RequestParser::setCurrentArgumentList(std::string argName) // Set the current argument list
 {
 	char *subtoken;
 
@@ -313,32 +252,32 @@ bool RequestParser::setCurrentArgumentList(std::string argName)
 	}
 }
 
-void RequestParser::shiftArguments()
+void RequestParser::shiftArguments() // Shift the current index to the next argument
 {
 	currentIndex++;
 }
 
-std::string RequestParser::getCommandMessage()
+std::string RequestParser::getCommandMessage() // Get the command message
 {
 	return (command);
 }
 
-std::string RequestParser::getCommandArgument(std::string argName)
+std::string RequestParser::getCommandArgument(std::string argName) // Get the command argument
 {
 	return (parsedArguments[argName]);
 }
 
-std::list<std::string> RequestParser::getCommandArgumentList(std::string argName)
+std::list<std::string> RequestParser::getCommandArgumentList(std::string argName) // Get the command argument list
 {
 	return (argumentLists[argName]);
 }
 
-std::vector<std::string> RequestParser::getAllTokens()
+std::vector<std::string> RequestParser::getAllTokens() // Get all tokens
 {
 	return (parsedTokens);
 }
 
-bool RequestParser::containsArgument(std::string argName)
+bool RequestParser::containsArgument(std::string argName) // Check if the argument exists
 {
 	
 	if (parsedArguments.count(argName) == 0)
@@ -348,7 +287,7 @@ bool RequestParser::containsArgument(std::string argName)
 	return (true);
 }
 
-bool RequestParser::checkCommandArgumentList(std::string argName)
+bool RequestParser::checkCommandArgumentList(std::string argName) // Check if the command argument list exists
 {
 	if (argumentLists.count(argName) == 0)
 	{
@@ -360,17 +299,17 @@ bool RequestParser::checkCommandArgumentList(std::string argName)
 
 RequestParser::~RequestParser() {}
 
-const char* RequestParser::MissingArgumentsException::what() const throw()
+const char* RequestParser::MissingArgumentsException::what() const throw() // Missing arguments exception
 {
 	return ("Not enough arguments provided");
 }
 
-const char* RequestParser::TooManyArgumentsException::what() const throw()
+const char* RequestParser::TooManyArgumentsException::what() const throw() // Too many arguments exception
 {
 	return ("Too many arguments provided");
 }
 
-const char* RequestParser::InvalidCommandException::what() const throw()
+const char* RequestParser::InvalidCommandException::what() const throw() // Invalid command exception
 {
 	return ("Invalid command");
 }

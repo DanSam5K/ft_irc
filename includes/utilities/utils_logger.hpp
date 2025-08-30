@@ -1,12 +1,20 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						         utils_logger.hpp 	 					     #
+#****************************************************************************/
+
 #ifndef UTILS_LOGGER_HPP
-#define UTILS_LOGGER_HPP
+# define UTILS_LOGGER_HPP
 
-#define EVENT_LOGGER_OFF 0
-#define EVENT_LOGGER_ERROR 1
-#define EVENT_LOGGER_WARNING 2
-#define EVENT_LOGGER_INFO 3
+// Event logging levels (it allows filtering of log messages)
+#define EVENT_LOGGER_OFF 0 // No logging
+#define EVENT_LOGGER_ERROR 1 // Error messages
+#define EVENT_LOGGER_WARNING 2 // Warning messages
+#define EVENT_LOGGER_INFO 3 // Informational messages
 
-#define EVENT_LOGGER_LEVEL 3
+#define EVENT_LOGGER_LEVEL 3 // Current logging level
 
 #include "utils_signal_manager.hpp"
 #include <cstddef>
@@ -14,17 +22,18 @@
 #include <sstream>
 #include <string>
 
-namespace logActionUtils
+namespace logActionUtils // Namespace for logging actions
 {
-	void info(std::string msg);
-	void warn(std::string msg);
-	void warn(std::string msg, std::string command);
-	void error(std::string msg);
-	void reply(int socket, std::string msg);
-	void command(int socket, std::string command);
-	std::string getFormattedCommand(std::string command);
+	void info(std::string msg); // Log informational messages
+	void warn(std::string msg); // Log warning messages
+	void warn(std::string msg, std::string command); // Log warning messages with command
+	void error(std::string msg); // Log error messages
+	void reply(int socket, std::string msg); // Log reply messages
+	void command(int socket, std::string command); // Log command messages
 
-	template <typename T>
+	std::string getFormattedCommand(std::string command); // Get formatted command string
+
+	template <typename T> // info: Log informational messages with detail
 	void info(std::string msg, T detail)
 	{
 		if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_INFO)
@@ -37,7 +46,7 @@ namespace logActionUtils
 		std::cerr << ss.str() << std::endl;
 	}
 
-	template <typename T>
+	template <typename T> // warn: Log warning messages with detail
 	void warn(std::string msg, T detail)
 	{
 		if (EVENT_LOGGER_LEVEL < EVENT_LOGGER_WARNING)
