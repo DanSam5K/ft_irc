@@ -15,8 +15,9 @@
 
 namespace SignalManager
 {
-    extern bool shouldShutdown;
-    
+    extern bool shouldShutdown; // this is a extern variable, that means that it is defined in another file.
+                                // The reason why it is not defined here is to allow for shared access across multiple files.
+                                // This allows different parts of the program to check if a shutdown has been requested.
     // Handles system signals (e.g., SIGINT) to trigger server shutdown.
     void signalHandler(int signalNumber);
 }

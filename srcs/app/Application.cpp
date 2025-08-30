@@ -1,84 +1,134 @@
+/****************************************************************************#
+#- - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - - -#
+#- - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - - -#
+#****************************************************************************#
+#  						        Application.cpp     					     #
+#****************************************************************************/
+/* - Initializes the server with the given port and password.
+   - Sets up the listening socket.
+   - Manages client connections and communication.
+   - Handles incoming IRC messages and broadcasts them to clients.
+   - Cleans up resources on shutdown. */
+
 #include "Application.hpp"
 
-
-/*Initializes the server with the given port and password.
-
-setUpServer() sets up the listening socket.
-
-PasswordManager and ConnectionManager objects are dynamically allocated.
-
-Note: Consider using smart pointers (like std::auto_ptr in C++98 or at least clear deallocation) to avoid memory leaks. */
-
+/* Constructor initializes the server with the given port and password.
+   - Sets up the server socket.
+   - Initializes authentication and connection management. */
 Application::Application(int port, std::string password) 
-	: _port(port), _activeConnections(0)
+	: _port(port), _activeConnections(0) // Initialize port with the provided value, and sets _activeConnections to 0 (new connection count)
 {
-	setUpServer();
-	_auth = new PasswordManager(password);
-	_state = new ConnectionManager(*this, *_auth);
+	setUpServer(); // Set up the server socket and prepare it for incoming connections
+	_auth = new PasswordManager(password); // This line creates an object of PasswordManager with the provided password. This object will manage password-related functionalities.
+	_state = new ConnectionManager(*this, *_auth); // This line creates an object of ConnectionManager, this object will manage client connections and their states.
+							                       // is used *this, because it refers to the current instance of the Application class.
+							                       // and *_auth is used to pass the PasswordManager instance by reference. That means it can be modified by the ConnectionManager.
+							                       // In other and simpler words: &(_auth) is the address of the pointer, while *_auth is the actual object.
+	// Every instance of Application requires its own instances of these managers, one for authentication and one for connection management.
 }
 
-
-/* Cleanly shuts down the server, closes the socket, and deallocates memory.
-
-Risk: delete _pollDescriptors; assumes it's allocated. If not properly initialized or reassigned elsewhere, this could cause undefined behavior.
-Suggestion: Set these pointers to NULL after deletion to avoid dangling pointers. */
-
+/* Destructor cleans up resources, including closing the server socket and deleting allocated memory. */
 Application::~Application()
 {
-	logActionUtils::info("Shutting down application");
-	close(_serverSocket.fd);
-	delete _pollDescriptors;
-	delete _auth;
-	delete _state;
+	logActionUtils::info("Shutting down application"); // Log
+	close(_serverSocket.fd); // Close server socket (created in setUpServer)
+	delete _pollDescriptors; // Delete poll descriptors (created in setUpPoll)
+	delete _auth; // Delete authentication manager (created in constructor)
+	delete _state; // Delete connection manager (created in constructor)
 }
 
-
-/*
-Sets socket to non-blocking mode, as required.
-- Correct use of fcntl() with O_NONBLOCK on macOS per subject.
-
-Ensures valid port range.
-- Subject Violation: The subject does not require this restriction. In fact, it says your program should accept any port passed as argument. This may cause your server to fail evaluation if the evaluator uses port 6667 (standard for IRC).
-- Fix: Remove port range restriction and allow any valid port number.
-*/
-
+/* Sets up the server socket and prepares it for incoming connections, including creating a non-blocking socket,
+   binding to the specified port, listening for incoming connections, and initializing polling structures for client management. */
 void Application::setUpServer()
 {
-	// logActionUtils::info("Application: Initializing server...");
-	logActionUtils::info("Starting Server Setup");
+	logActionUtils::info("Starting Server Setup"); // Log
+	_serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0); // Create socket. Uses AF_INET for IPv4, SOCK_STREAM for TCP, and 0 for the default protocol.
 
-	_serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_serverSocket.fd == -1)
+	if (_serverSocket.fd == -1) // If socket creation fails...
 	{
-		throw std::runtime_error("Failed to create socket!");
+		throw std::runtime_error("Failed to create socket!"); // ... throw error.
 	}
-	logActionUtils::info("Setting non-blocking mode for server socket");
-	int currentFlags = fcntl(_serverSocket.fd, F_GETFL, 0);
 
-	fcntl(_serverSocket.fd, F_SETFL, currentFlags | O_NONBLOCK);
+	logActionUtils::info("Setting non-blocking mode for server socket"); // Log
+	int currentFlags = fcntl(_serverSocket.fd, F_GETFL, 0); // Get current socket flags, so it can change it into non-blocking mode.
+	fcntl(_serverSocket.fd, F_SETFL, currentFlags | O_NONBLOCK); // Set non-blocking mode.
 
-	logActionUtils::info("Connecting to port", _port);
-	_serverSocket.address.sin_family = AF_INET;
-	// if (_port < 6660 || _port > 7000)
-	// {
-	// 	throw(std::runtime_error("Application: Invalid port: port must be between 6660 and 7000"));
-	// }
-	_serverSocket.address.sin_port = htons(_port);
-	_serverSocket.address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	logActionUtils::info("Binding Socket");
-	if (bind(_serverSocket.fd, (struct sockaddr *)&_serverSocket.address, sizeof(_serverSocket.address)) == -1)
+	logActionUtils::info("Connecting to port", _port); // Log
+	_serverSocket.address.sin_family = AF_INET; // Set address family to IPv4, as required by the protocol. AF_INET is a macro located in <netinet/in.h>
+	_serverSocket.address.sin_port = htons(_port); // Convert port number to network byte order, because network protocols use big-endian byte order
+													// htons is the function used to convert values to network byte order
+	_serverSocket.address.sin_addr.s_addr = htonl(INADDR_ANY); // Accept connections from any IP address,
+																// htonl is the function used to convert values to network byte order. Is different from htons because
+																// htons is used for port numbers (16 bits), while htonl is used for IP addresses (32 bits).
+																// INADDR_ANY is a macro that represents any IP address
+																// to allow the server to accept connections from any client.
+
+
+
+	logActionUtils::info("Binding Socket"); // Log binding (associate a socket with a specific address and port)
+											// sockets are basically endpoints for sending and receiving data.
+											// In other words, they allow communication between different processes.
+											// Sockets are like "phone jacks" used to manage connections between clients and servers.
+											// Binding a socket is like plugging in a phone jack to a wall socket.
+
+	if (bind(_serverSocket.fd, (struct sockaddr *)&_serverSocket.address, sizeof(_serverSocket.address)) == -1) // If binding fails...
+	// bind(socket, address, address_length). "(struct sockaddr *)&_serverSocket.address" casts the address to the correct type (sockaddr).
 	{
-		throw(std::runtime_error("Port Binding Failed"));
+		throw(std::runtime_error("Port Binding Failed")); // ... throw error.
 	}
-	logActionUtils::info("Listening for connections");
-	if (listen(_serverSocket.fd, SOMAXCONN) == -1)
+
+
+
+	logActionUtils::info("Listening for connections"); // Log
+	if (listen(_serverSocket.fd, SOMAXCONN) == -1) // If listening fails...
+	// listen(socket, backlog). SOMAXCONN is a constant that represents the maximum number of possible pending connections.
+	// backlog/SOMAXCONN then defines the maximum size of this "waiting room".
 	{
-		throw std::runtime_error("Unable to listen on socket");
+		throw std::runtime_error("Unable to listen on socket"); // ... throw error.
 	}
-	_pollDescriptors = new std::vector<pollfd>(MAX_CLIENTS + 1);
+
+	_pollDescriptors = new std::vector<pollfd>(MAX_CLIENTS + 1); //std::vector<pollfd>* _pollDescriptors; - pointer to a vector of pollfd structures
+
+	// These are the types of containers: std::pair, std::map, std::vector, std::array, std::list
+	// std::list is a doubly linked list that allows for efficient insertion and removal of elements.
+	// std::pair is a simple container to store two related values.
+	// std::map is related to std::pair in that each element in a std::map is a std::pair, where the first element is the key and the second element is the value.
+	// std::array has a fixed size, while std::vector can grow dynamically.
+
+	// the commands used in std::vector are:
+	// push_back (allows adding elements to the end of the vector) - ex: vec.push_back(4) - this results in vec = {1, 2, 3, 4}
+	// pop_back (removes the last element), - ex: vec.pop_back(); - this results in vec = {1, 2, 3} (removes 4)
+	// insert (adds elements at a specific position) - ex: vec.insert(vec.begin() + 1, 5); - this results in vec = {1, 5, 2, 3, 4}
+	// erase (removes elements from a specific position)- ex: vec.erase(vec.begin() + 1); - this results in vec = {1, 2, 3, 4} (removes 5)
+	// clear (removes all elements), - ex: vec.clear(); - this results in vec = {}
+	// size (returns the number of elements), - ex: vec.size(); - this results in 4
+	// capacity (returns the size of the allocated storage), - ex: vec.capacity(); - this results in 8 (or more, depending on the implementation)
+	// operator[] (accesses elements by index). - ex: vec[0]; - this results in 1
+
+	// the vector has as prototype: std::vector<Type> vec(size); - where Type is the data type of the elements, and size is the initial size of the vector.
+	// vec is the name of the vector, but in our use is not explicitly defined, that means we don't have a specific variable name for it, as it is assigned to a pointer.
+	// In this case, the vector is initialized with a size of MAX_CLIENTS + 1 to accommodate the server socket and all potential client connections.
+	// pollfd is a structure used to monitor multiple file descriptors. It is defined in <poll.h>.
+	// It looks like:
+	// struct pollfd {
+	//		int fd;         // file descriptor to monitor
+	//		short events;   // events to monitor (e.g., POLLIN, POLLOUT)
+	//		short revents;  // events that occurred
+	//};
+	// new std::vector is creating a dynamic array that can grow in size to hold all client connections.
+	// <pollfd> here is a structure that holds information about the file descriptors being monitored.
+	// Each element in the vector is a pollfd structure, which contains the file descriptor and the events to monitor.
+
 	signal(SIGINT, SignalManager::signalHandler);
-	logActionUtils::info("Server setup complete");
+	// The line above sets up a signal handler for SIGINT (Ctrl+C) to allow graceful shutdown.
+	// (tells the program what to do when it receives the Ctrl+C signal).
+	// The what to do is defined in the SignalManager::signalHandler function.
+	// It changes the shouldShutdown flag to true, allowing the server to shut down gracefully.
+	// The next step for the shutdown process, after changing the flag, would be to clean up resources and close connections.
+	// This can be seen in the file utils_signal_manager.cpp
+
+	logActionUtils::info("Server setup complete"); // Log
 }
 
 void Application::launchServer()

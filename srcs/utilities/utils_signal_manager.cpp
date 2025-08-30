@@ -8,7 +8,6 @@ bool SignalManager::shouldShutdown = false;
 // Handles incoming signals (e.g., SIGINT) and sets shutdown flag
 void SignalManager::signalHandler(int signalNumber)
 {
-	/* std::cout << "[Sig Handler] Caught signal " << signalNumber << std::endl; */
 	if (signalNumber == SIGINT)
 	{
 		SignalManager::shouldShutdown = true;
