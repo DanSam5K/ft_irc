@@ -1,6 +1,6 @@
 #****************************************************************************#
-#- - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - - -#
-#- - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - - -#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
 #****************************************************************************#
 #  						            Makefile        					     #
 #****************************************************************************#
@@ -21,11 +21,7 @@ HDR_EXT := hpp
 CXX := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++98 -g3
 
-
-
-
 ######## MAC #######
-
 # OpenSSL paths for macOS (Homebrew)
 OPENSSL_PATH := $(shell brew --prefix openssl 2>/dev/null)
 ifneq ($(OPENSSL_PATH),)
@@ -35,17 +31,13 @@ else
 	OPENSSL_INC :=
 	OPENSSL_LIB :=
 endif
-
 # Automatically find all include subdirectories
 INCLUDES := $(shell find $(INC_DIR) -type d -exec echo -I{} \;) $(OPENSSL_INC)
-
 ######## MAC #######
-
+######## LINUX #######
 # # Automatically find all include subdirectories
 # INCLUDES := $(shell find $(INC_DIR) -type d -exec echo -I{} \;)
-
-
-
+######## LINUX #######
 
 # Find all source files recursively
 SRC := $(shell find $(SRC_DIR) -name '*.$(SRC_EXT)')
@@ -53,46 +45,29 @@ SRC := $(shell find $(SRC_DIR) -name '*.$(SRC_EXT)')
 # Create corresponding object files in the OBJ_DIR hierarchy
 OBJ := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SRC:.$(SRC_EXT)=.o))
 
-
-
-
-
 ######## MAC #######
 # Libraries
 LIBS := $(OPENSSL_LIB) -lssl -lcrypto
 ######## MAC #######
-
+######## LINUX #######
 # # Libraries (none currently required, placeholder)
 # LIBS :=
-
-
-
-
+######## LINUX #######
 
 # Default modeTarget
 .PHONY: all
 all: $(NAME)
-
-
-
-
-
 
 ######## MAC #######
 # Link final executable
 $(NAME): $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 ######## MAC #######
-
+######## LINUX #######
 # # Link final executable
 # $(NAME): $(OBJ)
 # 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -lssl -lcrypto
-
-
-
-
-
-
+######## LINUX #######
 
 # Compile source files into object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.$(SRC_EXT)
