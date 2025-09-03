@@ -1,14 +1,9 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   error_reply.cpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dsamuel <dsamuel@student.42wolfsburg.de    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/29 13:08:54 by dsamuel           #+#    #+#             */
-/*   Updated: 2025/08/29 13:09:03 by dsamuel          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						        error_reply.cpp 	 					     #
+#****************************************************************************/
 
 #include "reply_message.hpp"
 #include "reply_macros.hpp"
@@ -280,7 +275,7 @@ std::string const rpl_msg::errNicknameTooLong(ClientUser &user, std::string nick
     reply += user.getNickname();
     reply += " ";
     reply += nickname;
-    reply += " :Nickname too long, max. 9 characters\r\n";
+    reply += " :Nickname too long, max. 16 characters\r\n";
     return (reply);
 }
 

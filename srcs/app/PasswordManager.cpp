@@ -1,3 +1,10 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						     PasswordManager.cpp 	 					     #
+#****************************************************************************/
+
 #include "PasswordManager.hpp"
 #include "ft_irc.hpp"
 #include "utils_logger.hpp"
@@ -14,7 +21,7 @@ PasswordManager::PasswordManager(std::string connectionPassword) {
 
 PasswordManager::~PasswordManager() {}
 
-std::string PasswordManager::computeSHA256(std::string password)
+std::string PasswordManager::computeSHA256(std::string password) // Compute the SHA-256 hash of a password
 {
 	unsigned char hash[SHA256_DIGEST_LENGTH];
 	unsigned const char *plainText = reinterpret_cast<unsigned const char *>(password.c_str());
@@ -29,17 +36,17 @@ std::string PasswordManager::computeSHA256(std::string password)
 	return (ss.str());
 }
 
-std::string PasswordManager::generateHash(std::string plainText)
+std::string PasswordManager::generateHash(std::string plainText) // Generate a hash from a plain text password
 {
 	return (computeSHA256(plainText));
 }
 
-void PasswordManager::verifyConnectionPassword(std::string password)
+void PasswordManager::verifyConnectionPassword(std::string password) // Checks if the connection password is valid
 {
 	verifyPassword(hashedConnectionPassword, password);
 }
 
-void PasswordManager::verifyPassword(std::string hash, std::string plainText)
+void PasswordManager::verifyPassword(std::string hash, std::string plainText) // Verifies a password against a hash
 {
 	std::string password_hash = computeSHA256(plainText);
 
@@ -51,7 +58,7 @@ void PasswordManager::verifyPassword(std::string hash, std::string plainText)
 	logActionUtils::info("PasswordManager: Passwords match!");
 }
 
-const char* PasswordManager::InvalidPasswordException::what() const throw()
+const char* PasswordManager::InvalidPasswordException::what() const throw() // Returns a message indicating that the password is invalid.
 {
 	return ("invalid password");
 }

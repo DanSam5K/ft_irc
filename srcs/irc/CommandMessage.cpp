@@ -1,3 +1,10 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						     CommandMessage.cpp 	 					     #
+#****************************************************************************/
+
 #include "CommandMessage.hpp"
 #include <stdexcept>
 #include "RequestParser.hpp"
@@ -23,27 +30,27 @@ CommandMessage::CommandMessage(ClientUser &userRef, std::string rawInput) : _ori
 	parser = new RequestParser(rawInput);
 }
 
-void CommandMessage::processInput()
+void CommandMessage::processInput() // Process the incoming command message, calling the parser
 {
 	parser->parse();
 }
 
-CommandMessage::~CommandMessage()
+CommandMessage::~CommandMessage() 
 {
 	delete parser;
 };
 
-std::string CommandMessage::getCommandMessage()
+std::string CommandMessage::getCommandMessage() // Get the raw command message
 {
 	return (parser->getCommandMessage());
 }
 
-RequestParser CommandMessage::get_parser()
+RequestParser CommandMessage::get_parser() // Get the request parser
 {
 	return (*parser);
 }
 
-std::string CommandMessage::getCommandArgument(std::string argumentName)
+std::string CommandMessage::getCommandArgument(std::string argumentName) // Get a specific command argument
 {
 	if (parser->containsArgument(argumentName))
 	{
@@ -55,7 +62,7 @@ std::string CommandMessage::getCommandArgument(std::string argumentName)
 	}
 }
 
-std::list<std::string> CommandMessage::getCommandArgumentList(std::string argumentName)
+std::list<std::string> CommandMessage::getCommandArgumentList(std::string argumentName) // Get a list of command arguments
 {
 	if (parser->checkCommandArgumentList(argumentName))
 	{
@@ -67,17 +74,17 @@ std::list<std::string> CommandMessage::getCommandArgumentList(std::string argume
 	}
 }
 
-bool CommandMessage::checkCommandArgument(std::string argumentName)
+bool CommandMessage::checkCommandArgument(std::string argumentName) // Check if a specific command argument exists
 {
 	return (parser->containsArgument(argumentName));
 }
 
-bool CommandMessage::checkCommandArgumentList(std::string argumentName)
+bool CommandMessage::checkCommandArgumentList(std::string argumentName) // Check if a specific command argument list exists
 {
 	return (parser->checkCommandArgumentList(argumentName));
 }
 
-ClientUser &CommandMessage::getMessageSender() const
+ClientUser &CommandMessage::getMessageSender() const // Get the user who sent the message
 {
 	return (_originUser);
 }

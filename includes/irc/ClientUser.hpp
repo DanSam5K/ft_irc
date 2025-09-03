@@ -1,5 +1,12 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						         ClientUser.hpp    	 					     #
+#****************************************************************************/
+
 #ifndef CLIENT_USER_HPP
-#define CLIENT_USER_HPP
+# define CLIENT_USER_HPP
 
 #include "ft_irc.hpp"
 
@@ -34,36 +41,36 @@ class ClientUser
         bool checkValidNickname(std::string nickname);
 
     public:
-        ClientUser(ConnectionManager &context, int socket);
+        ClientUser(ConnectionManager &context, int socket); // Constructor that takes a reference to the connection manager and a socket file descriptor
         virtual ~ClientUser();
 
         // Getters for user identity and state
-        std::string const &getNickname() const;
-        std::string const &getUsername() const;
-        std::string const &getRealname() const;
-        std::string const &getHostname() const;
-        std::string const &getIdentifier() const;
-        std::string const &getModeFlags() const;
-        
-        bool passwordEnabled() const;
-        int const &getSocket() const;
-        bool confirmFullyRegistered() const;
+        std::string const &getNickname() const; // Get the user's nickname
+        std::string const &getUsername() const; // Get the user's username
+        std::string const &getRealname() const; // Get the user's real name
+        std::string const &getHostname() const; // Get the user's hostname
+        std::string const &getIdentifier() const; // Get the user's full identifier
+        std::string const &getModeFlags() const; // Get the user's mode flags
+
+        bool passwordEnabled() const; // Check if password protection is enabled
+        int const &getSocket() const; // Get the user's socket file descriptor
+        bool confirmFullyRegistered() const; // Check if the user is fully registered
 
         // Setters for user identity fields
-        void setNickname(std::string nickname);
-        void setUsername(std::string username);
-        void setRealname(std::string realname);
-        void setHostname(std::string hostname);
+        void setNickname(std::string nickname); // Set the user's nickname
+        void setUsername(std::string username); // Set the user's username
+        void setRealname(std::string realname); // Set the user's real name
+        void setHostname(std::string hostname); // Set the user's hostname
 
         // Marks the user as having passed password authentication
-        void authorizePassword();
+        void authorizePassword(); // Marks the user as having passed password authentication
 
         // Mode management for IRC user flags
-        void configureModes(std::string modesToAdd, std::string modesToremove);
-        void addModeFlags(std::string modeString);
-        void removeModeFlags(std::string modeString);
-        bool confirmModePresence(char flag) const ;
-        bool checkUserOperator() const;
+        void configureModes(std::string modesToAdd, std::string modesToremove); // Configure user modes
+        void addModeFlags(std::string modeString); // Add user mode flags
+        void removeModeFlags(std::string modeString); // Remove user mode flags
+        bool confirmModePresence(char flag) const; // Check if a specific mode flag is present
+        bool checkUserOperator() const; // Check if the user is an operator
 
         // Marks the user as fully registered on the server
         void setRegistered();
@@ -81,85 +88,12 @@ class ClientUser
         bool checkAllUserDetails();
 
         // Exception classes for invalid user input
-        class InvalidUsernameException : public std::exception {};
-        class InvalidNicknameException : public std::exception {};
-        class NicknameTooLongException : public std::exception {};
+        class InvalidUsernameException : public std::exception {}; // Exception thrown when an invalid username is provided
+        class InvalidNicknameException : public std::exception {}; // Exception thrown when an invalid nickname is provided
+        class NicknameTooLongException : public std::exception {}; // Exception thrown when a nickname is too long
 };
 
 // Allows easy printing of user details to output streams
 std::ostream &operator<<(std::ostream &os, ClientUser const &obj);
 
 #endif
-
-
-
-
-// // Maximum allowed length for a user's nickname
-// #define MAX_NICKNAME_LENGHT 19
-
-// class ConnectionManager;
-
-// // Represents a connected IRC client and manages its state and identity
-// class ClientUser
-// {
-
-// 	private:
-// 		std::string _nickname;
-// 		std::string _username;
-// 		std::string _hostname;
-// 		std::string _realname;
-// 		std::string _fullIdentifier;
-// 		std::string _modeFlags;
-
-// 		bool _isRegistered;
-// 		bool _validPassword;
-// 		ConnectionManager &_serverContext;
-// 		int	_socketFd;
-
-// 		// Updates the user's full IRC identifier string
-// 		void refreshIdentifier();
-
-// 		bool checkIsValidUsername(std::string username);
-// 		bool checkValidNickname(std::string nickname);
-
-// 	public:
-// 		ClientUser(ConnectionManager &context, int socket);
-// 		virtual ~ClientUser();
-
-// 		std::string const &getNickname() const;
-// 		std::string const &getUsername() const;
-// 		std::string const &getRealname() const;
-// 		std::string const &getHostname() const;
-// 		std::string const &getIdentifier() const;
-// 		std::string const &getModeFlags() const;
-		
-// 		bool passwordEnabled() const;
-// 		int const &getSocket() const;
-// 		bool confirmFullyRegistered() const;
-
-// 		void setNickname(std::string nickname);
-// 		void setUsername(std::string username);
-// 		void setRealname(std::string realname);
-// 		void setHostname(std::string hostname);
-// 		void authorizePassword();
-// 		void configureModes(std::string modesToAdd, std::string modesToremove);
-// 		void addModeFlags(std::string modeString);
-// 		void removeModeFlags(std::string modeString);
-// 		bool confirmModePresence(char flag) const ;
-// 		bool checkUserOperator() const;
-
-// 		void setRegistered();
-
-// 		void handleSocketInput();
-// 		void userBroadcast(std::string message);
-// 		bool confirmNicknameExist();
-// 		bool checkAllUserDetails();
-
-// 		class InvalidUsernameException : public std::exception {};
-// 		class InvalidNicknameException : public std::exception {};
-// 		class NicknameTooLongException : public std::exception {};
-// };
-
-// std::ostream &operator<<(std::ostream &os, ClientUser const &obj);
-
-// #endif 

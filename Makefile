@@ -1,18 +1,9 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: dsamuel <dsamuel@student.42wolfsburg.de    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/07/31 17:46:39 by dsamuel           #+#    #+#              #
-#    Updated: 2025/08/08 19:58:56 by dsamuel          ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-# **************************************************************************** #
-#                                  ft_ircserv                                   #
-# **************************************************************************** #
+#****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						            Makefile        					     #
+#****************************************************************************#
 
 # Executable name
 NAME := ircserv
@@ -30,8 +21,16 @@ HDR_EXT := hpp
 CXX := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++98 -g3
 
+OPENSSL_PATH := $(shell brew --prefix openssl 2>/dev/null)
+ifneq ($(OPENSSL_PATH),)
+	OPENSSL_INC := -I$(OPENSSL_PATH)/include
+	OPENSSL_LIB := -L$(OPENSSL_PATH)/lib
+else
+	OPENSSL_INC :=
+	OPENSSL_LIB :=
+endif
 # Automatically find all include subdirectories
-INCLUDES := $(shell find $(INC_DIR) -type d -exec echo -I{} \;)
+INCLUDES := $(shell find $(INC_DIR) -type d -exec echo -I{} \;) $(OPENSSL_INC)
 
 # Find all source files recursively
 SRC := $(shell find $(SRC_DIR) -name '*.$(SRC_EXT)')
@@ -39,8 +38,8 @@ SRC := $(shell find $(SRC_DIR) -name '*.$(SRC_EXT)')
 # Create corresponding object files in the OBJ_DIR hierarchy
 OBJ := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SRC:.$(SRC_EXT)=.o))
 
-# Libraries (none currently required, placeholder)
-LIBS :=
+# Libraries
+LIBS := $(OPENSSL_LIB) -lssl -lcrypto
 
 # Default modeTarget
 .PHONY: all
@@ -48,7 +47,7 @@ all: $(NAME)
 
 # Link final executable
 $(NAME): $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -lssl -lcrypto
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 # Compile source files into object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.$(SRC_EXT)

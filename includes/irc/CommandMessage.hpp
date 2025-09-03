@@ -1,5 +1,12 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						         CommandMessage.hpp    	    			     #
+#****************************************************************************/
+
 #ifndef COMMAND_MESSAGE_HPP
-#define COMMAND_MESSAGE_HPP
+# define COMMAND_MESSAGE_HPP
 
 #include "ft_irc.hpp"
 #include "RequestParser.hpp"
@@ -48,44 +55,3 @@ class CommandMessage
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-// #define MESSAGE_MAX_SIZE 512
-// #define MESSAGE_MIN_SIZE 2
-
-// class CommandMessage
-// {
-// 	private:
-
-// 		// std::string _command;
-// 		// std::map<std::string, std::string> _arguments;
-// 		// std::map<std::string, std::list<std::string> > _argumentList;
-
-// 		ClientUser &_originUser;
-// 		RequestParser *parser;
-
-// 		RequestParser get_parser();
-
-// 	public:
-// 		CommandMessage(ClientUser &userRef, std::string rawInput);
-// 		virtual ~CommandMessage();
-
-// 		std::string getCommandMessage();
-// 		std::string getCommandArgument(std::string argumentName);
-// 		std::list<std::string> getCommandArgumentList(std::string argumentName);
-// 		bool checkCommandArgument(std::string argumentName);
-// 		bool checkCommandArgumentList(std::string argumentName);
-
-// 		void processInput();
-
-// 		ClientUser &getMessageSender() const;
-// };
-
-// #endif

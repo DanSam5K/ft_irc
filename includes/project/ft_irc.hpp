@@ -1,11 +1,17 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						         ft_irc.hpp     	 					     #
+#****************************************************************************/
+
 #ifndef FT_IRC_HPP
-#define FT_IRC_HPP
+# define FT_IRC_HPP
 
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
-#include <exception>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -26,16 +32,16 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
-#include <openssl/sha.h>
 #include "utils_logger.hpp"
 #include "utils_signal_manager.hpp"
 
-
+// Server information
 # define SERVER_PREFIX ":ircserv.42.de"
 # define SERVER_NAME "ircserv"
 # define SERVER_CREATION "1/08/2025"
 # define SERVER_VERSION "0.01"
 
+// Administrator information
 # define ADMIN_INFO_1 "Wolfsburg, Germany"
 # define ADMIN_INFO_2 "The best 42 Germany IRC server !"
 # define ADMIN_EMAIL "dsamuel@student.42wolfsburg.de & demrodri@student.42wolfsburg.de"
@@ -50,6 +56,7 @@ bool confirmChannel(std::string name);
 std::string stringToLowercase(std::string string);
 
 // Returns true if elem is found in the list
+// As template, we can use it with any type
 template <typename T>
 bool is_in_list(std::list<T> list, T elem)
 {

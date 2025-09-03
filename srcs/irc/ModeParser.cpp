@@ -1,3 +1,10 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  							     ModeParser.cpp 	 					     #
+#****************************************************************************/
+
 #include "ModeParser.hpp"
 #include <cctype>
 #include <exception>
@@ -7,7 +14,7 @@ ModeParser::ModeParser(std::string rawModeString) : rawModeString(rawModeString)
 
 ModeParser::~ModeParser() {}
 
-void ModeParser::parse()
+void ModeParser::parse() // Parse the mode string
 {
 	while (currentIndex < rawModeString.size())
 	{
@@ -23,7 +30,7 @@ void ModeParser::parse()
 	}
 }
 
-void ModeParser::parsePrefixSign()
+void ModeParser::parsePrefixSign() // Parse the prefix sign
 {
 	if (getCurrentChar() == '+')
 	{
@@ -44,7 +51,7 @@ void ModeParser::parsePrefixSign()
 
 }
 
-void ModeParser::parseModeFlag()
+void ModeParser::parseModeFlag() // Parse the mode flag
 {
 	if (std::isalpha(getCurrentChar()))
 	{
@@ -71,22 +78,22 @@ void ModeParser::parseModeFlag()
 
 
 
-std::string ModeParser::getAddedModeFlags()
+std::string ModeParser::getAddedModeFlags() // Get added mode flags
 {
 	return (addedModeFlags);
 }
 
-std::string ModeParser::getRemovedModeFlags()
+std::string ModeParser::getRemovedModeFlags() // Get removed mode flags
 {
 	return (removedModeFlags);
 }
 
-void ModeParser::shiftArguments()
+void ModeParser::shiftArguments() // Shift the current index to the next character
 {
 	currentIndex++;
 }
 
-char ModeParser::getCurrentChar()
+char ModeParser::getCurrentChar() // Get the current character
 {
 	if (currentIndex < rawModeString.size())
 	{

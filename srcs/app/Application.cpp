@@ -1,13 +1,15 @@
+/****************************************************************************#
+#  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
+#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+#****************************************************************************#
+#  						         Application.cpp 	 					     #
+#****************************************************************************/
+
 #include "Application.hpp"
 
-
 /*Initializes the server with the given port and password.
-
 setUpServer() sets up the listening socket.
-
-PasswordManager and ConnectionManager objects are dynamically allocated.
-
-Note: Consider using smart pointers (like std::auto_ptr in C++98 or at least clear deallocation) to avoid memory leaks. */
+PasswordManager and ConnectionManager objects are dynamically allocated.*/
 
 Application::Application(int port, std::string password) 
 	: _port(port), _activeConnections(0)
@@ -19,7 +21,6 @@ Application::Application(int port, std::string password)
 
 
 /* Cleanly shuts down the server, closes the socket, and deallocates memory.
-
 Risk: delete _pollDescriptors; assumes it's allocated. If not properly initialized or reassigned elsewhere, this could cause undefined behavior.
 Suggestion: Set these pointers to NULL after deletion to avoid dangling pointers. */
 
@@ -44,7 +45,6 @@ Ensures valid port range.
 
 void Application::setUpServer()
 {
-	// logActionUtils::info("Application: Initializing server...");
 	logActionUtils::info("Starting Server Setup");
 
 	_serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -53,16 +53,12 @@ void Application::setUpServer()
 		throw std::runtime_error("Failed to create socket!");
 	}
 	logActionUtils::info("Setting non-blocking mode for server socket");
-	int currentFlags = fcntl(_serverSocket.fd, F_GETFL, 0);
+	// int currentFlags = fcntl(_serverSocket.fd, F_GETFL, 0);
 
-	fcntl(_serverSocket.fd, F_SETFL, currentFlags | O_NONBLOCK);
+	fcntl(_serverSocket.fd, F_SETFL, O_NONBLOCK);
 
 	logActionUtils::info("Connecting to port", _port);
 	_serverSocket.address.sin_family = AF_INET;
-	// if (_port < 6660 || _port > 7000)
-	// {
-	// 	throw(std::runtime_error("Application: Invalid port: port must be between 6660 and 7000"));
-	// }
 	_serverSocket.address.sin_port = htons(_port);
 	_serverSocket.address.sin_addr.s_addr = htonl(INADDR_ANY);
 
@@ -81,13 +77,11 @@ void Application::setUpServer()
 	logActionUtils::info("Server setup complete");
 }
 
-void Application::launchServer()
+void Application::launchServer() // Launch the IRC server (initialization, event loop, cleanup)
 {
 	std::vector<pollfd> &client_fds = *_pollDescriptors;
 	client_fds[0].fd = _serverSocket.fd;
 	client_fds[0].events = POLLIN;
-
-	// _activeConnections = 0; // keep track of number of connected clients
 
 	logActionUtils::info("Entering main loop");
 
@@ -95,97 +89,94 @@ void Application::launchServer()
 	{
 		try
 		{
-			eventLoop();
-			acceptNewClient();
-			broadcastPendingMessages();
-			readFromClients();
+			eventLoop(); // Main event loop for handling events
+			acceptNewClient(); // Accept new client connections
+			broadcastPendingMessages(); // Send pending messages to clients
+			readFromClients(); // Read messages from clients
 		}
-		catch (Application::ServerShutdownException &e)
+		catch (Application::ServerShutdownException &e) // Handle server shutdown
 		{
 			logActionUtils::warn("Server stopping gracefully");
 			break;
 	   }
 	}
-	logActionUtils::info("Exited main loop");
+	logActionUtils::info("Exited main loop"); // Log server shutdown
 }
 
-void Application::readFromClients()
+void Application::readFromClients() // Read messages from clients
 {
-	std::vector<pollfd> &client_fds = *_pollDescriptors;
+	std::vector<pollfd> &client_fds = *_pollDescriptors; // Get the list of client file descriptors
 	for (int i = 1; i <= _activeConnections && !SignalManager::shouldShutdown; ++i)
 	{
-		if (client_fds[i].fd != -1 && client_fds[i].revents &POLLIN)
+		if (client_fds[i].fd != -1 && client_fds[i].revents &POLLIN) // If the client socket is ready for reading
 		{
-			handleIncomingIrcPayload(client_fds[i].fd);
+			handleIncomingIrcPayload(client_fds[i].fd); // Handle incoming IRC payload (receive data, parse commands, execute commands)
 		}
 	}
 }
 
-void Application::eventLoop()
+void Application::eventLoop() // Main event loop for handling events (poll, process events, handle timeouts)
 {
-	// std::vector<pollfd> &client_fds = *_pollDescriptors;
-
-	int num_ready = poll(_pollDescriptors->data(), _activeConnections + 1, -1);
-	if (num_ready == -1 && SignalManager::shouldShutdown)
+	int num_ready = poll(_pollDescriptors->data(), _activeConnections + 1, -1); // Wait indefinitely for events
+	if (num_ready == -1 && SignalManager::shouldShutdown) // Check if polling was interrupted by a signal
 	{
 		logActionUtils::warn("Signal Interrupted");
 		throw Application::ServerShutdownException();
 	}
-	else if (num_ready == -1)
+	else if (num_ready == -1) // Check if polling failed
 	{
 		throw std::runtime_error("Polling failed");
 	}
 }
 
-void Application::acceptNewClient()
+void Application::acceptNewClient() // Accept new client connections (check for incoming connections, accept new client, add to poll list)
 {
-	std::vector<pollfd> &client_fds = *_pollDescriptors;
+	std::vector<pollfd> &client_fds = *_pollDescriptors; // Get the list of client file descriptors
 
-	if (!(client_fds[0].revents &POLLIN))
+	if (!(client_fds[0].revents &POLLIN)) // Check if the server socket is ready for reading
 	{
 		return;
 	}
-	socklen_t clientSize = sizeof(_clientSocket.address);
+	socklen_t clientSize = sizeof(_clientSocket.address); // Get the size of the client address structure
 
-	// logActionUtils::info("Application: Accepting client call...");
-	_clientSocket.fd = accept(_serverSocket.fd, (struct sockaddr *)&_clientSocket.address, &clientSize);
+	_clientSocket.fd = accept(_serverSocket.fd, (struct sockaddr *)&_clientSocket.address, &clientSize); // Accept new client connection
 	if (_clientSocket.fd == -1)
 	{
 		logActionUtils::warn("Client connection attempt Failed");
 		return;
 	}
-	logActionUtils::info("New client connection with fd", _clientSocket.fd);
+	logActionUtils::info("New client connection with fd", _clientSocket.fd); // Log new client connection
 
-	// Set the client socket to non-blocking
-	int flags = fcntl(_clientSocket.fd, F_GETFL, 0);
-	fcntl(_clientSocket.fd, F_SETFL, flags | O_NONBLOCK);
+	// // Set the client socket to non-blocking
+	// int flags = fcntl(_clientSocket.fd, F_GETFL, 0);
+	fcntl(_clientSocket.fd, F_SETFL, O_NONBLOCK);
 
 	// add new client to the list of file descriptors to monitor
 	if (_activeConnections == MAX_CLIENTS)
 	{
 		throw std::runtime_error("Maximum client Limit reached");
 	}
-	client_fds[_activeConnections + 1].fd = _clientSocket.fd;
-	client_fds[_activeConnections + 1].events = POLLIN | POLLOUT;
+	client_fds[_activeConnections + 1].fd = _clientSocket.fd; // Add new client socket to poll list
+	client_fds[_activeConnections + 1].events = POLLIN | POLLOUT; // Monitor for incoming and outgoing data (reading and writing)
 
 	// Creating new user for client
-	_state->registerPendingUser(_clientSocket.fd, _clientSocket.address);
-	_activeConnections++;
+	_state->registerPendingUser(_clientSocket.fd, _clientSocket.address); // Register new user (create user object, add to user list)
+	_activeConnections++; // Increment active connections count
 }
 
-void Application::removeClient(int fd)
+void Application::removeClient(int fd) // Remove a client from the server (log disconnection, clean up messages, disconnect user, remove from poll list)
 {
 	logActionUtils::info("Disconnecting client", fd);
 	try
 	{
-		cleanUpMessagesFromRemovedClient(fd);
+		cleanUpMessagesFromRemovedClient(fd); // Remove queued messages for the disconnected client
 
 		_state->disconnectUserBySocket(fd); // Closes the client socket
 
-		std::vector<pollfd>&client_fds = *_pollDescriptors;
+		std::vector<pollfd>&client_fds = *_pollDescriptors; // Get the list of client file descriptors
 		for (int i = 1; i <= _activeConnections; i++)
 		{
-			if (client_fds[i].fd == fd)
+			if (client_fds[i].fd == fd) // Check if the client socket matches the disconnected socket
 			{
 				client_fds.erase(client_fds.begin() + i);  // Remove the client from the vector
 				_activeConnections--;
@@ -193,13 +184,13 @@ void Application::removeClient(int fd)
  		   	}
   		}
 	}
-	catch (ConnectionManager::UserNotFoundException &e)
+	catch (ConnectionManager::UserNotFoundException &e) // Catch user not found exception
 	{
 		logActionUtils::warn("Application: ConnectionManager:", e.what());
 	}
 }
 
-void Application::cleanUpMessagesFromRemovedClient(int fd)
+void Application::cleanUpMessagesFromRemovedClient(int fd) // Clean up messages for a removed client (check if pending messages are empty, iterate through pending messages, remove messages for the disconnected client)
 {
 	if (_pendingMessages.empty()) 
 	{
@@ -220,13 +211,13 @@ void Application::cleanUpMessagesFromRemovedClient(int fd)
 	}
 }
 
-void Application::handleIncomingIrcPayload(int fd)
+void Application::handleIncomingIrcPayload(int fd) // Handle incoming IRC payload
 {
-	static std::map<int, std::string> clientMessageBuffers;
+	static std::map<int, std::string> clientMessageBuffers; // Map to store client message buffers. Static because it needs to persist across function calls
 
 	try
 	{
-		receiveCommands(fd, clientMessageBuffers[fd]);
+		receiveCommands(fd, clientMessageBuffers[fd]); // Receive commands from the client (receive data, process commands, send responses)
 	}
 	catch (Application::ClientDisconnectedException &e)
 	{
@@ -235,12 +226,12 @@ void Application::handleIncomingIrcPayload(int fd)
 	}
 }
 
-void Application::receiveCommands(int fd, std::string &messageBuf)
+void Application::receiveCommands(int fd, std::string &messageBuf) // Receive commands from the client
 {
 	try
 	{
-		extractCommands(fd, messageBuf);
-		processClientInput(fd, messageBuf);
+		extractCommands(fd, messageBuf); // Extract commands from the client message buffer
+		processClientInput(fd, messageBuf); // Handle incoming IRC payload (extract commands, process each command)
 	}
 	catch (Application::NoAvailablePayloadException &e)
 	{
@@ -254,7 +245,7 @@ void Application::receiveCommands(int fd, std::string &messageBuf)
 	}
 }	
 
-bool Application::messageHasTerminator(std::string &messageBuf)
+bool Application::messageHasTerminator(std::string &messageBuf) // Check if the message buffer has a terminator "\r\n"
 {
 	size_t terminator = messageBuf.find("\r\n", 0);
 	if (terminator == std::string::npos)
@@ -264,13 +255,18 @@ bool Application::messageHasTerminator(std::string &messageBuf)
 	return (true);
 }
 
-void Application::extractCommands(int fd, std::string &messageBuf)
+void Application::extractCommands(int fd, std::string &messageBuf) // Extract commands from the client message buffer
 {
 	char buf[4096];
 	memset(buf, 0, sizeof(buf));
 	int bytes_recv = 0;
 
 	bytes_recv = recv(fd, buf, sizeof(buf), 0);
+	if (bytes_recv > 0)
+	{
+		logActionUtils::info("Received bytes from socket", fd);
+		logActionUtils::info("Data received:", std::string(buf, bytes_recv));
+	}
 	if (bytes_recv == -1)
 	{
 		if	(errno == EWOULDBLOCK || errno == EAGAIN)
@@ -285,24 +281,46 @@ void Application::extractCommands(int fd, std::string &messageBuf)
 	}
 	if (bytes_recv == 0)
 	{
-		// logActionUtils::warn("Application: read returned 0, read:", buf);
-		throw ClientDisconnectedException();
+		// For non-blocking sockets, recv() returning 0 might mean no data available
+		// Check if it's actually a disconnection by trying again later
+		throw NoAvailablePayloadException();
 	}
 	messageBuf += std::string(buf, bytes_recv);
 }
 
-void Application::processClientInput(int fd, std::string &messageBuf)
+void Application::processClientInput(int fd, std::string &messageBuf) // checks if the message buffer has a terminator "\r\n", if so, process the commands
 {
+	logActionUtils::info("Processing input for socket", fd);
+	logActionUtils::info("Message buffer content:", messageBuf);
+	
+	// Look for both \r\n and \n terminators (for compatibility)
 	size_t terminator = messageBuf.find("\r\n", 0);
+	bool isCRLF = true;
+	if (terminator == std::string::npos) {
+		terminator = messageBuf.find("\n", 0);
+		isCRLF = false;
+	}
+	
 	if (terminator == std::string::npos)
 	{
+		logActionUtils::info("No terminator found in message buffer");
 		return ;
 	}
+	
+	logActionUtils::info("Found terminator, processing commands");
 	size_t pos = 0;
 
 	while (terminator != std::string::npos)
 	{
-		std::string first_command = messageBuf.substr(pos, terminator + 2 - pos);
+		int terminatorLength = isCRLF ? 2 : 1;
+		std::string first_command = messageBuf.substr(pos, terminator + terminatorLength - pos);
+		
+		// Normalize terminator to \r\n for IRC compliance
+		if (!isCRLF) {
+			// Replace \n with \r\n
+			first_command = first_command.substr(0, first_command.length() - 1) + "\r\n";
+		}
+		
 		logActionUtils::command(fd, first_command);
 		
 		try
@@ -315,13 +333,19 @@ void Application::processClientInput(int fd, std::string &messageBuf)
 			throw ClientDisconnectedException();
 		}
 		
-		pos = terminator + 2;
+		pos = terminator + terminatorLength;
+		// Look for next terminator (both types)
 		terminator = messageBuf.find("\r\n", pos);
+		isCRLF = true;
+		if (terminator == std::string::npos) {
+			terminator = messageBuf.find("\n", pos);
+			isCRLF = false;
+		}
 	}
 	messageBuf = messageBuf.substr(pos);
 }
 
-void Application::sendMessageToClient(int socket, const std::string&message)
+void Application::sendMessageToClient(int socket, const std::string&message) // create a new IncomingIRCMessage, set the client_fd and irc_payload, push the message to the _pendingMessages queue
 {
 	IncomingIRCMessage newMessage;
 	newMessage.client_fd = socket;
@@ -329,7 +353,7 @@ void Application::sendMessageToClient(int socket, const std::string&message)
 	_pendingMessages.push_back(newMessage);
 }
 
-void Application::broadcastPendingMessages()
+void Application::broadcastPendingMessages() // iterate over _pendingMessages, send each message to the corresponding client socket
 {
 	std::vector<pollfd> &client_fds = *_pollDescriptors;
 
