@@ -14,6 +14,7 @@
 #include "PasswordManager.hpp"
 #include "utils_logger.hpp"
 #include "reply_message.hpp"
+#include <algorithm>
 #include <cctype>
 #include <exception>
 #include <list>
@@ -259,8 +260,34 @@ void MessageHandler::topicCommandHandler(CommandMessage &message) // Handle TOPI
 
 void MessageHandler::capRequestHandler(CommandMessage &message) // Handle CAP command
 {
-	(void)message;
-	return ;
+	ClientUser &sender = message.getMessageSender();
+	std::string capCommand = "LS"; // default
+	
+	if (message.checkCommandArgument("capCommand"))
+		capCommand = message.getCommandArgument("capCommand");
+	
+	// Convert to uppercase for comparison
+	std::transform(capCommand.begin(), capCommand.end(), capCommand.begin(), ::toupper);
+	
+	if (capCommand == "LS")
+	{
+		// List available capabilities (empty list - no capabilities supported)
+		sender.userBroadcast("CAP * LS :\r\n");
+	}
+	else if (capCommand == "REQ")
+	{
+		// Request rejected - no capabilities supported
+		if (message.checkCommandArgument("capArguments"))
+			sender.userBroadcast("CAP * NAK :" + message.getCommandArgument("capArguments") + "\r\n");
+		else
+			sender.userBroadcast("CAP * NAK :\r\n");
+	}
+	else if (capCommand == "END")
+	{
+		// End capability negotiation - do nothing
+		return;
+	}
+	// For other CAP commands, just ignore them
 }
 
 void MessageHandler::infoCommandHandler(CommandMessage &message) // Handle INFO command
@@ -280,10 +307,26 @@ void MessageHandler::infoCommandHandler(CommandMessage &message) // Handle INFO 
 void MessageHandler::joinCommandHandler(CommandMessage &message) // Handle JOIN command
 {
 	ClientUser &sender = message.getMessageSender();
+	logActionUtils::info("JOIN handler started for user", sender.getNickname());
+	
+	// Safety check: verify command has valid arguments
+	logActionUtils::info("Checking if command has channel argument list");
+	if (!message.checkCommandArgumentList("channel"))
+	{
+		logActionUtils::info("No channel argument list found");
+		sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, "JOIN"));
+		return;
+	}
+	
+	logActionUtils::info("Getting channel list");
 	std::list<std::string> chan_names = message.getCommandArgumentList("channel");
+	logActionUtils::info("Got channel list, size:", chan_names.size());
+	
 	if (chan_names.empty())
 	{
-		throw std::runtime_error("JOIN command failed: No channel specified.");
+		logActionUtils::info("Channel list is empty");
+		sender.userBroadcast(rpl_msg::errNeedMoreParams(sender, "JOIN"));
+		return;
 	}
 	if (chan_names.front() == "0")
 	{

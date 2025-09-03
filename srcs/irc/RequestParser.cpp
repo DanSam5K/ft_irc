@@ -1,6 +1,26 @@
 /****************************************************************************#
 #  - - - - >  42 WOLFSBURG  < - - - - - - - - - - - > ft_ircserv  < - - - -  #
-#  - - - - >  By: dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
+std::list<std::string> RequestParser::splitToList(std::string currentToken) // Split a string into a list
+{
+	std::list<std::string> args_list;
+
+	char *token = (char *)currentToken.c_str();
+
+	char *subtoken = std::strtok(token, ",");
+	if (subtoken != NULL)  // Safety check to prevent NULL pointer
+	{
+		args_list.push_back((std::string)subtoken);
+		while (subtoken != NULL)
+		{
+			subtoken = strtok(NULL, ",");
+			if (subtoken != NULL)
+			{
+				args_list.push_back((std::string)subtoken);
+			}
+		}
+	}
+	return (args_list);
+}dsamuel & demrodri < - - - - - - - >  08/2025   < - - - -  #
 #****************************************************************************#
 #  							     RequestParser.cpp 	 					     #
 #****************************************************************************/
@@ -35,7 +55,7 @@ std::string params[NUMBER_CMD][10] = {
 	{"channel", "user", "comment"}, 
 	{"channel", "Part Message"}, 
 	{"modeTarget", "rawModeString", "modeChar modeArguments"}, 
-	{"a"}, 	{"password"}, {"nickname", "channel"}, 
+	{"capCommand", "capArguments"}, 	{"password"}, {"nickname", "channel"}, 
 	{"channel", "topic"}, {"token"}, 
 	{"token"}
 };
@@ -49,7 +69,7 @@ ArgumentType params_states[NUMBER_CMD][10] = {
 	{OPTIONAL_LIST}, {OPTIONAL_LIST, OPTIONAL_ARG},
 	{REQUIRED, OPTIONAL_ARG, MULTI_CHOICE}, 
 	{MULTIPLE, MULTIPLE, OPTIONAL_ARG}, {MULTIPLE, OPTIONAL_ARG}, 
-	{REQUIRED, OPTIONAL_ARG, MULTI_CHOICE}, {OPTIONAL_ARG}, {OPTIONAL_ARG}, 
+	{REQUIRED, OPTIONAL_ARG, MULTI_CHOICE}, {REQUIRED, OPTIONAL_ARG}, {OPTIONAL_ARG}, 
 	{REQUIRED, REQUIRED}, {REQUIRED, OPTIONAL_ARG}, {REQUIRED, OPTIONAL_ARG}, 
 	{REQUIRED}, {REQUIRED}
 };
@@ -163,7 +183,8 @@ std::list<std::string> RequestParser::splitToList(std::string currentToken) // S
 	char *token = (char *)currentToken.c_str();
 
 	char *subtoken = std::strtok(token, ",");
-	args_list.push_back((std::string)subtoken);
+	if (subtoken != NULL)
+		args_list.push_back((std::string)subtoken);
 	while (subtoken != NULL)
 	{
 		subtoken = strtok(NULL, ",");

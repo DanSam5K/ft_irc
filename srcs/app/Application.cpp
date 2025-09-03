@@ -262,6 +262,11 @@ void Application::extractCommands(int fd, std::string &messageBuf) // Extract co
 	int bytes_recv = 0;
 
 	bytes_recv = recv(fd, buf, sizeof(buf), 0);
+	if (bytes_recv > 0)
+	{
+		logActionUtils::info("Received bytes from socket", fd);
+		logActionUtils::info("Data received:", std::string(buf, bytes_recv));
+	}
 	if (bytes_recv == -1)
 	{
 		if	(errno == EWOULDBLOCK || errno == EAGAIN)
@@ -276,24 +281,46 @@ void Application::extractCommands(int fd, std::string &messageBuf) // Extract co
 	}
 	if (bytes_recv == 0)
 	{
-		// logActionUtils::warn("Application: read returned 0, read:", buf);
-		throw ClientDisconnectedException();
+		// For non-blocking sockets, recv() returning 0 might mean no data available
+		// Check if it's actually a disconnection by trying again later
+		throw NoAvailablePayloadException();
 	}
 	messageBuf += std::string(buf, bytes_recv);
 }
 
 void Application::processClientInput(int fd, std::string &messageBuf) // checks if the message buffer has a terminator "\r\n", if so, process the commands
 {
+	logActionUtils::info("Processing input for socket", fd);
+	logActionUtils::info("Message buffer content:", messageBuf);
+	
+	// Look for both \r\n and \n terminators (for compatibility)
 	size_t terminator = messageBuf.find("\r\n", 0);
+	bool isCRLF = true;
+	if (terminator == std::string::npos) {
+		terminator = messageBuf.find("\n", 0);
+		isCRLF = false;
+	}
+	
 	if (terminator == std::string::npos)
 	{
+		logActionUtils::info("No terminator found in message buffer");
 		return ;
 	}
+	
+	logActionUtils::info("Found terminator, processing commands");
 	size_t pos = 0;
 
 	while (terminator != std::string::npos)
 	{
-		std::string first_command = messageBuf.substr(pos, terminator + 2 - pos);
+		int terminatorLength = isCRLF ? 2 : 1;
+		std::string first_command = messageBuf.substr(pos, terminator + terminatorLength - pos);
+		
+		// Normalize terminator to \r\n for IRC compliance
+		if (!isCRLF) {
+			// Replace \n with \r\n
+			first_command = first_command.substr(0, first_command.length() - 1) + "\r\n";
+		}
+		
 		logActionUtils::command(fd, first_command);
 		
 		try
@@ -306,8 +333,14 @@ void Application::processClientInput(int fd, std::string &messageBuf) // checks 
 			throw ClientDisconnectedException();
 		}
 		
-		pos = terminator + 2;
+		pos = terminator + terminatorLength;
+		// Look for next terminator (both types)
 		terminator = messageBuf.find("\r\n", pos);
+		isCRLF = true;
+		if (terminator == std::string::npos) {
+			terminator = messageBuf.find("\n", pos);
+			isCRLF = false;
+		}
 	}
 	messageBuf = messageBuf.substr(pos);
 }

@@ -200,7 +200,7 @@ bool ClientUser::checkIsValidUsername(std::string username)
 bool ClientUser::checkValidNickname(std::string nickname)
 {
     const std::string accepted_chars = "_\\^|[]{}`";
-    if (nickname.size() == 0 || nickname.size() > 9)
+    if (nickname.size() == 0 || nickname.size() > 16)
         throw NicknameTooLongException();
     if (std::isdigit(nickname[0]))
         return (false);
