@@ -1,5 +1,0 @@
-CAP LS 302
-PASS password123
-NICK demetrio
-USER demetrio demetrio 127.0.0.1 :Demetrio
-CAP END

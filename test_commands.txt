@@ -1,4 +1,0 @@
-PASS password123
-NICK testuser
-USER testuser 0 * :Test User
-JOIN :

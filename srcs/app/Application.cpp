@@ -53,9 +53,9 @@ void Application::setUpServer()
 		throw std::runtime_error("Failed to create socket!");
 	}
 	logActionUtils::info("Setting non-blocking mode for server socket");
-	int currentFlags = fcntl(_serverSocket.fd, F_GETFL, 0);
+	// int currentFlags = fcntl(_serverSocket.fd, F_GETFL, 0);
 
-	fcntl(_serverSocket.fd, F_SETFL, currentFlags | O_NONBLOCK);
+	fcntl(_serverSocket.fd, F_SETFL, O_NONBLOCK);
 
 	logActionUtils::info("Connecting to port", _port);
 	_serverSocket.address.sin_family = AF_INET;
@@ -147,9 +147,9 @@ void Application::acceptNewClient() // Accept new client connections (check for 
 	}
 	logActionUtils::info("New client connection with fd", _clientSocket.fd); // Log new client connection
 
-	// Set the client socket to non-blocking
-	int flags = fcntl(_clientSocket.fd, F_GETFL, 0);
-	fcntl(_clientSocket.fd, F_SETFL, flags | O_NONBLOCK);
+	// // Set the client socket to non-blocking
+	// int flags = fcntl(_clientSocket.fd, F_GETFL, 0);
+	fcntl(_clientSocket.fd, F_SETFL, O_NONBLOCK);
 
 	// add new client to the list of file descriptors to monitor
 	if (_activeConnections == MAX_CLIENTS)
